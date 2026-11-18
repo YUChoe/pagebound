@@ -128,7 +128,7 @@ public class PageTreeService {
                 UPDATE pages SET parent_id = ?, slug = ?, title = ?, content = ?, version = ?, updated_by = ?,
                        updated_at = ? WHERE id = ?""")
                 .params(parentId, slug, title, content, version, actor.userId(), now, id).update();
-        setPosition(parentId, id, position == null && !sameParent ? Integer.MAX_VALUE : position);
+        setPosition(parentId, id, position == null && !sameParent ? Integer.valueOf(Integer.MAX_VALUE) : position);
         pages.insertRevision(new PageStore.NewRevision(id, version, title, newPath, content,
                 newPath.equals(oldPath) ? "updated" : "moved", actor.source(), null, actor.userId(), actor.tokenId(), now));
 

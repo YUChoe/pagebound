@@ -158,6 +158,28 @@ public class PageWriteService {
         return version;
     }
 
+    /** 특정 버전의 제목·본문으로 되돌린다: 새 버전 action='restored' (spec/features/F7-common.md 2절). 경로는 유지. */
+    @Transactional
+    public Saved restore(long id, int version, Actor actor) {
+        Row row = load(id);
+        if (row.draft()) {
+            throw WikiException.badRequest("draft cannot be restored");
+        }
+        record Rev(String title, String content) {
+        }
+        Rev rev = jdbc.sql("SELECT title, content FROM page_revisions WHERE page_id = ? AND version = ?")
+                .params(id, version).query((rs, n) -> new Rev(rs.getString(1), rs.getString(2))).optional()
+                .orElseThrow(() -> WikiException.notFound("revision " + version));
+        String now = Instant.now().toString();
+        int next = row.version() + 1;
+        jdbc.sql("UPDATE pages SET title = ?, content = ?, version = ?, updated_by = ?, updated_at = ? WHERE id = ?")
+                .params(rev.title(), rev.content(), next, actor.userId(), now, id).update();
+        pages.insertRevision(new PageStore.NewRevision(id, next, rev.title(), row.path(), rev.content(), "restored",
+                actor.source(), "v" + version + " 복원", actor.userId(), actor.tokenId(), now));
+        afterContentChange(id, row.path());
+        return new Saved(id, row.path(), next, warnings(id));
+    }
+
     /** 편집용 원문. section이 있으면 그 섹션 텍스트만. */
     public Source source(long id, Integer section) {
         Row row = load(id);

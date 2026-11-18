@@ -155,6 +155,7 @@ onBeforeUnmount(cleanup)
         <h1 class="doc-title">{{ page.title }}</h1>
         <div class="doc-actions">
           <router-link v-if="canEdit()" class="btn primary" :to="'/edit/' + encodePath(page.path)">편집</router-link>
+          <router-link class="btn" :to="'/history/' + encodePath(page.path)" title="버전 목록, 비교, 복원">역사</router-link>
           <router-link class="btn" :to="'/blame/' + encodePath(page.path)" title="줄마다 마지막으로 바꾼 리비전·작성자">행별 이력</router-link>
           <button v-if="codeCount" type="button" @click="code?.setAll(true)">코드 모두 접기</button>
           <button v-if="codeCount" type="button" @click="code?.setAll(false)">코드 모두 펼치기</button>

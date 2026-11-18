@@ -66,7 +66,8 @@ watch(() => routePath(route), load, { immediate: true })
            :style="{ '--age': levels[row.version] }" :title="tooltip(row.version)">
         <span class="blame-info" role="cell">
           <template v-if="row.first">
-            <span class="blame-ver">v{{ row.version }}</span>
+            <router-link class="blame-ver" :to="{ path: '/history/' + encodePath(page.path), query: { from: row.version - 1, to: row.version } }"
+              title="이 리비전의 직전 대비 변경 보기">v{{ row.version }}</router-link>
             <span class="blame-author">{{ info(row.version).author ?? '알 수 없음' }}</span>
             <span class="muted">{{ relativeTime(info(row.version).createdAt) }}</span>
             <span v-if="info(row.version).source !== 'web'" class="badge" :class="'src-' + info(row.version).source">

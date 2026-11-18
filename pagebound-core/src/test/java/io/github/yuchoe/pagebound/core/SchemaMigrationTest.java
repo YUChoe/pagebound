@@ -39,8 +39,8 @@ class SchemaMigrationTest {
                 "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' "
                         + "AND name NOT LIKE 'pages_fts_%' AND name <> 'flyway_schema_history' ORDER BY name");
         assertThat(tables).containsExactly(
-                "api_tokens", "attachments", "audit_log", "link_previews", "page_aliases", "page_blame", "page_links",
-                "page_revisions", "page_tags", "pages", "pages_fts", "tags", "users");
+                "api_tokens", "attachments", "audit_log", "link_previews", "mcp_call_log", "page_aliases", "page_blame", "page_links",
+                "page_revisions", "page_tags", "pages", "pages_fts", "settings", "tags", "users");
     }
 
     @Test

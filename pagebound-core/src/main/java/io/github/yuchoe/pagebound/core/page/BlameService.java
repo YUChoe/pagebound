@@ -79,24 +79,33 @@ public class BlameService {
                 attribution = cache.lines();
             }
         }
-        record Rev(int version, String content) {
+        record Rev(int version, String content, String action) {
         }
-        List<Rev> revs = jdbc.sql("SELECT version, content FROM page_revisions WHERE page_id = ? AND version > ? ORDER BY version")
-                .params(pageId, base).query((rs, n) -> new Rev(rs.getInt(1), rs.getString(2))).list();
+        List<Rev> revs = jdbc.sql("SELECT version, content, action FROM page_revisions WHERE page_id = ? AND version > ? ORDER BY version")
+                .params(pageId, base).query((rs, n) -> new Rev(rs.getInt(1), rs.getString(2), rs.getString(3))).list();
+        Integer lastMigration = jdbc.sql("SELECT max(version) FROM page_revisions WHERE page_id = ? AND source = 'migration'")
+                .param(pageId).query((rs, n) -> (Integer) rs.getObject(1)).list().getFirst();
         for (Rev rev : revs) {
             List<String> next = lines(rev.content());
-            attribution = apply(attribution, previous, next, rev.version());
+            // 시스템 변경 무시 (F13 P1): 링크 자동 갱신, 이전 시점 본문 변환(마지막 migration 리비전)
+            boolean transparent = "link-updated".equals(rev.action())
+                    || rev.version() > 1 && Integer.valueOf(rev.version()).equals(lastMigration);
+            attribution = apply(attribution, previous, next, rev.version(), transparent);
             previous = next;
         }
         // 마지막 리비전과 현재 본문이 다르면(리비전 없는 수정) 현재 버전으로 귀속
         if (!previous.equals(current)) {
-            attribution = apply(attribution, previous, current, page.version());
+            attribution = apply(attribution, previous, current, page.version(), false);
         }
         return attribution;
     }
 
-    /** previous→next 줄 diff: 변경 없는 줄은 기존 귀속 유지, 추가·변경 줄은 version. */
-    static List<Integer> apply(List<Integer> attribution, List<String> previous, List<String> next, int version) {
+    /**
+     * previous→next 줄 diff: 변경 없는 줄은 기존 귀속 유지, 추가·변경 줄은 version.
+     * transparent면 줄 수가 같은 변경 묶음은 기존 귀속을 유지한다 (시스템 변경 무시).
+     */
+    static List<Integer> apply(List<Integer> attribution, List<String> previous, List<String> next, int version,
+                               boolean transparent) {
         List<Integer> out = new ArrayList<>(next.size());
         int source = 0;
         for (AbstractDelta<String> delta : DiffUtils.diff(previous, next).getDeltas()) {
@@ -104,8 +113,9 @@ public class BlameService {
             while (source < position) {
                 out.add(attribution.get(source++));
             }
+            boolean keep = transparent && delta.getSource().size() == delta.getTarget().size();
             for (int i = 0; i < delta.getTarget().size(); i++) {
-                out.add(version);
+                out.add(keep ? attribution.get(position + i) : version);
             }
             source = position + delta.getSource().size();
         }
