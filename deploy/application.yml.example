@@ -1,0 +1,20 @@
+# /opt/pagebound/config/application.yml — 운영 설정 (저장소의 기본값 위에 덮어씀)
+server:
+  port: 4000                      # 레거시 Wiki.js 주소를 그대로 대체 (Q8)
+
+pagebound:
+  data-dir: /opt/pagebound/data   # pagebound.db, attachments/
+  anonymous-read: true            # 관리 화면 설정(security.anonymous-read)이 있으면 그 값이 우선
+  site:
+    base-url: ""                  # 리버스 프록시 뒤라면 외부 주소 (영구 링크·MCP)
+  backup:
+    dir: /opt/pagebound/backups   # 가능하면 다른 디스크
+    retention-days: 7
+    cron: "0 30 3 * * *"          # 매일 03:30
+  link-preview:
+    opengraph:
+      allow-private-hosts: []     # 사내 웹 중 OG 미리보기를 허용할 호스트 (SSRF 예외)
+
+logging:
+  file:
+    name: /opt/pagebound/logs/pagebound.log

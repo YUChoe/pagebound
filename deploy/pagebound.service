@@ -1,0 +1,25 @@
+# Pagebound systemd 유닛 (spec/phases/M8-cutover.md 1번)
+# 설치: sudo cp pagebound.service /etc/systemd/system/ && sudo systemctl daemon-reload && sudo systemctl enable --now pagebound
+[Unit]
+Description=Pagebound wiki
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pagebound
+Group=pagebound
+WorkingDirectory=/opt/pagebound
+# 외부 설정: /opt/pagebound/config/application.yml (Spring Boot가 ./config/ 를 자동으로 읽음)
+EnvironmentFile=-/opt/pagebound/pagebound.env
+ExecStart=/usr/bin/java -Xms256m -Xmx1g -Dfile.encoding=UTF-8 -jar /opt/pagebound/pagebound-server.jar
+# SIGTERM 정상 종료 코드
+SuccessExitStatus=143
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+ProtectSystem=full
+ReadWritePaths=/opt/pagebound
+
+[Install]
+WantedBy=multi-user.target

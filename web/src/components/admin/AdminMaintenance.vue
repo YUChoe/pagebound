@@ -6,6 +6,7 @@ import { adminApi, errorText } from '../../admin.js'
 const TASKS = [
   ['reindex-search', '검색 색인 재구축'], ['rebuild-links', '링크 인덱스 재계산'],
   ['clear-link-previews', '링크 미리보기 캐시 비우기'], ['cleanup-drafts', '초안 정리 즉시 실행'],
+  ['backup', '백업 즉시 실행 (DB + 첨부)'],
 ]
 const results = ref({})
 const running = ref('')

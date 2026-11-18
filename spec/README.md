@@ -4,7 +4,8 @@
 - 프로젝트명: Pagebound (코드/산출물 식별자 `pagebound`). 첨부와 하위 문서가 페이지에 종속(bound)되는 위키
 - 입력: `database.sqlite` (Wiki.js 2.x export), 이전 서비스 `http://<legacy-wiki>/`
 - 뷰 레퍼런스: `https://namu.wiki`
-- 상태: M0 완료(2026-11-18, 결정 사항 Q1~Q12 확정). M1 착수 가능
+- 상태 (2026-11-18): M1~M7 구현 완료, M8은 패키징·백업·리허설 완료. 남은 일은 운영 서버 설치, 수용 테스트, 전환(사람이 수행) — [M8](phases/M8-cutover.md) 진행 상황
+  - 외부 대기: GitLab 서비스 계정 토큰(M6 1번), F12 5절 "사용자별 활동"(P1) 미구현
 
 ## 문서 구성
 

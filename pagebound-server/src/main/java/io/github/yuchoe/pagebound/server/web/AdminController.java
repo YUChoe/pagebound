@@ -24,8 +24,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.github.yuchoe.pagebound.core.admin.AdminQueries;
-import io.github.yuchoe.pagebound.core.user.UserAdminService;
 import io.github.yuchoe.pagebound.core.settings.RuntimeSettings;
+import io.github.yuchoe.pagebound.core.user.UserAdminService;
+import io.github.yuchoe.pagebound.server.config.BackupService;
 
 /**
  * 관리자 API (spec/features/F12-admin.md 14절): 대시보드, 사용자, 감사 로그. ADMIN만 (SecurityConfig).
@@ -48,16 +49,18 @@ public class AdminController {
     private final PasswordEncoder encoder;
     private final CurrentUser currentUser;
     private final RuntimeSettings settings;
+    private final BackupService backup;
     private final Path dataDir;
 
     public AdminController(AdminQueries queries, UserAdminService users, PasswordEncoder encoder,
-                           CurrentUser currentUser, RuntimeSettings settings,
+                           CurrentUser currentUser, RuntimeSettings settings, BackupService backup,
                            @Value("${pagebound.data-dir}") Path dataDir) {
         this.queries = queries;
         this.users = users;
         this.encoder = encoder;
         this.currentUser = currentUser;
         this.settings = settings;
+        this.backup = backup;
         this.dataDir = dataDir;
     }
 
@@ -66,6 +69,7 @@ public class AdminController {
         Map<String, Object> d = new HashMap<>(queries.dashboard(settings.trashRetentionDays()));
         d.put("dbBytes", size(dataDir.resolve("pagebound.db")) + size(dataDir.resolve("pagebound.db-wal")));
         d.put("freeBytes", dataDir.toFile().getUsableSpace());
+        d.put("lastBackup", backup.latest().orElse(null));
         d.put("version", VERSION);
         d.put("startedAt", Instant.ofEpochMilli(ManagementFactory.getRuntimeMXBean().getStartTime()).toString());
         return d;

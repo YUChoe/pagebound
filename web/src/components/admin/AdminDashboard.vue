@@ -19,7 +19,7 @@ onMounted(async () => {
     <div class="stat-grid">
       <div class="stat"><b>{{ d.pages.active }}</b><span>문서</span><small>휴지통 {{ d.pages.trash }} · 초안 {{ d.pages.drafts }}</small></div>
       <div class="stat"><b>{{ d.attachments.count }}</b><span>첨부</span><small>{{ formatBytes(d.attachments.bytes) }}</small></div>
-      <div class="stat"><b>{{ formatBytes(d.dbBytes) }}</b><span>DB</span><small>여유 {{ formatBytes(d.freeBytes) }}</small></div>
+      <div class="stat"><b>{{ formatBytes(d.dbBytes) }}</b><span>DB</span><small>여유 {{ formatBytes(d.freeBytes) }} · 백업 {{ d.lastBackup ?? '없음' }}</small></div>
       <div class="stat"><b>{{ Object.values(d.users.byRole).reduce((a, b) => a + b, 0) }}</b><span>활성 사용자</span>
         <small>{{ Object.entries(d.users.byRole).map(([r, n]) => `${r} ${n}`).join(' · ') }} · 비활성 {{ d.users.inactive }}</small></div>
     </div>

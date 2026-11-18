@@ -29,6 +29,7 @@ import io.github.yuchoe.pagebound.core.page.LinkIndexer;
 import io.github.yuchoe.pagebound.core.page.PageWriteService;
 import io.github.yuchoe.pagebound.core.search.SearchService;
 import io.github.yuchoe.pagebound.core.settings.RuntimeSettings;
+import io.github.yuchoe.pagebound.server.config.BackupService;
 import io.github.yuchoe.pagebound.server.mcp.McpCallLog;
 import io.github.yuchoe.pagebound.server.preview.GitLabProvider;
 
@@ -52,11 +53,13 @@ public class AdminOpsController {
     private final JdbcClient jdbc;
     private final AuditLog audit;
     private final CurrentUser currentUser;
+    private final BackupService backup;
     private final Path dataDir;
 
     public AdminOpsController(RuntimeSettings settings, AdminQueries queries, McpCallLog callLog, GitLabProvider gitlab,
                               LinkIndexer links, PageWriteService writes, SearchService search, JdbcClient jdbc,
-                              AuditLog audit, CurrentUser currentUser, @Value("${pagebound.data-dir}") Path dataDir) {
+                              AuditLog audit, CurrentUser currentUser, BackupService backup,
+                              @Value("${pagebound.data-dir}") Path dataDir) {
         this.settings = settings;
         this.queries = queries;
         this.callLog = callLog;
@@ -67,6 +70,7 @@ public class AdminOpsController {
         this.jdbc = jdbc;
         this.audit = audit;
         this.currentUser = currentUser;
+        this.backup = backup;
         this.dataDir = dataDir;
     }
 
@@ -81,7 +85,7 @@ public class AdminOpsController {
         return settings();
     }
 
-    /** task: reindex-search, rebuild-links, clear-link-previews, cleanup-drafts */
+    /** task: reindex-search, rebuild-links, clear-link-previews, cleanup-drafts, backup(처리 건수 = 복사한 첨부 수) */
     @PostMapping("/maintenance/{task}")
     public TaskResult run(@PathVariable String task, Authentication auth) {
         long started = System.nanoTime();
@@ -93,6 +97,7 @@ public class AdminOpsController {
             }
             case "clear-link-previews" -> jdbc.sql("DELETE FROM link_previews").update();
             case "cleanup-drafts" -> writes.deleteStaleDrafts(Duration.ofHours(settings.draftRetentionHours()));
+            case "backup" -> backup.run().files();
             default -> throw WikiException.notFound("task " + task);
         };
         long ms = (System.nanoTime() - started) / 1_000_000;
