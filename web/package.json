@@ -1,0 +1,25 @@
+{
+  "name": "pagebound-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "dompurify": "3.4.17",
+    "highlight.js": "11.12.0",
+    "markdown-it": "15.0.3",
+    "mermaid": "12.3.0",
+    "vue": "3.5.44",
+    "vue-router": "5.4.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "6.0.10",
+    "jsdom": "30.1.3",
+    "vite": "8.3.5",
+    "vitest": "5.1.0"
+  }
+}

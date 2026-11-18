@@ -84,6 +84,13 @@ public final class MarkdownAnalyzer {
         return links;
     }
 
+    /** 클라이언트 JS String.trim()과 같은 범위(공백·NBSP·BOM 등 유니코드 공백) 제거. Java trim()/strip()은 NBSP를 남긴다. */
+    private static final Pattern EDGE_SPACE = Pattern.compile("^[\\s\\p{Z}\\uFEFF]+|[\\s\\p{Z}\\uFEFF]+$");
+
+    static String trimTitle(String raw) {
+        return EDGE_SPACE.matcher(raw).replaceAll("");
+    }
+
     /** ATX/Setext 헤딩 기준 섹션 목록. 번호는 중첩 깊이 기준 (헤딩 레벨을 건너뛰어도 1.1. 형태 유지). */
     public List<Section> sections(String markdown) {
         List<Heading> headings = new ArrayList<>();
@@ -119,7 +126,7 @@ public final class MarkdownAnalyzer {
                     break;
                 }
             }
-            sections.add(new Section(i + 1, number.toString(), level, h.getText().toString().trim(),
+            sections.add(new Section(i + 1, number.toString(), level, trimTitle(h.getText().toString()),
                     h.getStartOffset(), end));
         }
         return sections;

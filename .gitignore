@@ -23,3 +23,6 @@ application-local.yml
 
 # 사내 실제 값 (자리표시자 매핑)
 spec/local-values.md
+
+# 프런트엔드 빌드 산출물 (web/에서 npm run build로 생성)
+pagebound-server/src/main/resources/static/

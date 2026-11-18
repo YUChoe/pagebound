@@ -65,7 +65,7 @@
 ### 3.3 하이라이트
 
 - highlight.js. 언어 지정 블록은 해당 언어
-- 언어 미지정: 후보 언어(bash, sql, java, xml, json, yaml, ini, properties, python, kotlin, javascript)로 자동 감지, relevance 임계값 미만이면 plaintext (임계값은 M2에서 실데이터로 조정)
+- 언어 미지정: 후보 언어(bash, sql, java, xml, json)로 자동 감지, relevance 12 미만이면 plaintext (M2 실데이터 697블록으로 조정: yaml·ini·python 등은 셸 출력·주석 오탐이 많아 후보에서 제외. 결과 bash 63, sql 26, json 6, java 3, xml 1, plaintext 598)
 - 하이라이트는 뷰포트 진입 시 수행. 2,000줄 초과 블록은 하이라이트 없이 plaintext + 줄 번호 (성능 목표 유지)
 
 ## 4. 코드 접기 (접은 상태 유지)
@@ -86,7 +86,7 @@
 | 모든 사용자 공통 기본값 | 문서 본문 (`collapsed` 속성) | - |
 | 사용자별 조작 기록 | localStorage | `pb.fold.{pageId}.{blockKey}` |
 
-- `blockKey`: `title`이 있으면 title(같은 title 중복 시 순번 부여), 없으면 `sha1(언어 + 코드)` 앞 12자
+- `blockKey`: `title`이 있으면 title(같은 title 중복 시 순번 부여), 없으면 `cyrb53(언어 + 코드)` 16진 12자 (http 비보안 컨텍스트에서는 `crypto.subtle`을 쓸 수 없어 동기 해시 사용)
 - 코드 내용이 바뀐 블록은 키가 달라져 문서 기본값으로 돌아감 (의도된 동작)
 - 최대 1,000개 항목, 오래된 순으로 삭제
 - 기기 간 동기화(서버 저장)는 백로그 P2

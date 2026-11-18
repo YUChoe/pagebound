@@ -1,5 +1,6 @@
 pagebound:
   data-dir: ./data
+  anonymous-read: true
 
 spring:
   application:

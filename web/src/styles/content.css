@@ -1,0 +1,112 @@
+/* 문서 본문 (spec/features/F5-page-view.md 3절, F9-code-blocks.md) */
+
+.markdown-body h1, .markdown-body h2, .markdown-body h3,
+.markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  line-height: 1.35;
+  margin: 1.6em 0 0.6em;
+  scroll-margin-top: 64px;
+  position: relative;
+}
+.markdown-body h1 { font-size: 1.75em; border-bottom: 1px solid var(--border); padding-bottom: 0.2em; }
+.markdown-body h2 { font-size: 1.5em; border-bottom: 1px solid var(--border); padding-bottom: 0.2em; }
+.markdown-body h3 { font-size: 1.25em; }
+.markdown-body h4 { font-size: 1.1em; }
+.markdown-body .h-num { color: var(--link); margin-right: 0.15em; }
+.hide-hnum .h-num, .hide-hnum .toc-num { display: none; }
+
+.sec-fold {
+  position: absolute;
+  left: -1.6em;
+  top: 0.1em;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.8em;
+  padding: 0 4px;
+}
+.sec.folded > .sec-body { display: none; }
+.sec.folded > :is(h1, h2, h3, h4, h5, h6) { opacity: 0.75; }
+.sec-edit { float: right; font-size: 13px; font-weight: normal; }
+
+.markdown-body p, .markdown-body ul, .markdown-body ol, .markdown-body blockquote { margin: 0.6em 0; }
+.markdown-body ul, .markdown-body ol { padding-left: 1.6em; }
+.markdown-body .task-item { list-style: none; margin-left: -1.3em; }
+.markdown-body img { max-width: 100%; height: auto; }
+.markdown-body img.zoomable { cursor: zoom-in; }
+.markdown-body hr { border: 0; border-top: 1px solid var(--border); margin: 1.5em 0; }
+.markdown-body a.wikilink.red { color: var(--red-link); }
+
+.markdown-body blockquote { border-left: 4px solid var(--border); padding: 0.2em 1em; color: #4b5563; }
+.markdown-body .callout { border-left-width: 4px; border-radius: 4px; color: var(--text); background: #f3f6fa; }
+.markdown-body .callout::before { content: attr(data-callout); display: block; font-weight: 700; font-size: 0.85em; }
+.markdown-body .callout-info, .markdown-body .callout-note { border-left-color: #1a5fb4; background: #eef4fc; }
+.markdown-body .callout-tip, .markdown-body .callout-success { border-left-color: #1a7f37; background: #edf8f0; }
+.markdown-body .callout-warning { border-left-color: #bf8700; background: #fdf7e6; }
+.markdown-body .callout-danger { border-left-color: #d1242f; background: #fdf0f0; }
+
+.markdown-body details { border: 1px solid var(--border); border-radius: 6px; padding: 0.4em 0.8em; margin: 0.6em 0; }
+.markdown-body summary { cursor: pointer; font-weight: 600; }
+
+.table-wrap { overflow-x: auto; margin: 0.8em 0; }
+.markdown-body table { border-collapse: collapse; }
+.markdown-body th, .markdown-body td { border: 1px solid var(--border); padding: 6px 10px; }
+.markdown-body th { background: #f3f4f6; }
+.markdown-body tr:nth-child(2n) td { background: #fafbfc; }
+
+.markdown-body code { font-family: var(--mono); font-size: 0.875em; tab-size: 4; }
+.markdown-body :not(pre) > code { background: var(--code-bg); border-radius: 4px; padding: 0.1em 0.35em; }
+
+/* 코드블록 */
+.codeblock { border: 1px solid var(--border); border-radius: 6px; margin: 0.8em 0; background: var(--code-bg); position: relative; }
+.cb-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 6px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12.5px;
+  color: var(--muted);
+  min-height: 30px;
+}
+.cb-header .cb-btn { font-size: 12px; padding: 0 8px; }
+.cb-toggle { border: 0 !important; background: transparent !important; width: 22px; padding: 0 !important; font-size: 14px !important; }
+.cb-meta { display: flex; gap: 8px; flex: none; }
+.cb-lang { font-weight: 600; color: #374151; }
+.cb-lang.detected { font-weight: 400; color: var(--muted); font-style: italic; }
+.cb-title { font-family: var(--mono); color: #374151; }
+.cb-preview { display: none; flex: 1; min-width: 0; font-family: var(--mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cb-actions { margin-left: auto; display: flex; gap: 4px; flex: none; }
+.codeblock pre { display: flex; margin: 0; overflow-x: auto; font-size: 14px; line-height: 1.5; }
+.codeblock code { display: block; flex: 1; padding: 10px 12px; white-space: pre; background: transparent; font-size: 14px; }
+.cb-gutter {
+  flex: none;
+  padding: 10px 8px 10px 10px;
+  text-align: right;
+  white-space: pre;
+  color: #9ca3af;
+  border-right: 1px solid var(--border);
+  user-select: none;
+  font-family: var(--mono);
+  font-size: 14px;
+}
+.code-wrap .codeblock code { white-space: pre-wrap; word-break: break-all; }
+.code-wrap .cb-gutter { display: none; }
+.codeblock.is-clamped pre {
+  max-height: calc(25 * 1.5 * 14px + 20px);
+  overflow-y: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, #000 80%, transparent);
+  mask-image: linear-gradient(to bottom, #000 80%, transparent);
+}
+.cb-more { display: block; width: 100%; border: 0; border-top: 1px solid var(--border); border-radius: 0 0 6px 6px; }
+.codeblock.is-collapsed pre, .codeblock.is-collapsed .cb-more { display: none; }
+.codeblock.is-collapsed .cb-header { border-bottom: 0; }
+.codeblock.is-collapsed .cb-preview { display: block; }
+
+.mermaid-block { margin: 0.8em 0; overflow-x: auto; }
+.mermaid-block .mermaid-src { background: var(--code-bg); padding: 10px; font-family: var(--mono); font-size: 13px; }
+.mermaid-block svg { max-width: 100%; height: auto; }
+
+@media print {
+  .codeblock.is-collapsed pre, .codeblock.is-clamped pre { display: flex !important; max-height: none; -webkit-mask-image: none; mask-image: none; }
+  .sec.folded > .sec-body { display: block; }
+}

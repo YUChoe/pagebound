@@ -74,4 +74,9 @@ class MarkdownAnalyzerTest {
         String md = "## A\n#### B\n## C\n";
         assertThat(analyzer.sections(md)).extracting(Section::number).containsExactly("1.", "1.1.", "2.");
     }
+
+    @Test
+    void titleTrimsNbspLikeJavaScript() {
+        assertThat(analyzer.sections("## jar 사용 \n").get(0).title()).isEqualTo("jar 사용");
+    }
 }
