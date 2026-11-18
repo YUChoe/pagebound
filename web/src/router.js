@@ -4,6 +4,7 @@ import PageView from './components/PageView.vue'
 import EditorView from './components/EditorView.vue'
 import BlameView from './components/BlameView.vue'
 import HistoryView from './components/HistoryView.vue'
+import SourceView from './components/SourceView.vue'
 import RecentView from './components/RecentView.vue'
 import SearchView from './components/SearchView.vue'
 import TagsView from './components/TagsView.vue'
@@ -30,6 +31,7 @@ export const router = createRouter({
     { path: '/edit/:path(.*)*', name: 'edit', component: EditorView },
     { path: '/blame/:path(.*)*', name: 'blame', component: BlameView },
     { path: '/history/:path(.*)*', name: 'history', component: HistoryView },
+    { path: '/source/:path(.*)*', name: 'source', component: SourceView },
     { path: '/recent', name: 'recent', component: RecentView },
     { path: '/search', name: 'search', component: SearchView },
     { path: '/tags/:names(.*)*', name: 'tags', component: TagsView },

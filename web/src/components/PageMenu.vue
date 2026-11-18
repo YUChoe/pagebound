@@ -75,7 +75,8 @@ onBeforeUnmount(() => {
     <span class="split-btn">
       <button type="button" title="더 보기" @click="openMenu">⋮</button>
       <div v-if="menuOpen" class="dropdown menu-panel">
-        <a :href="'/w/' + encodePath(page.path) + '.md'" target="_blank" rel="noopener">원문 (.md)</a>
+        <router-link :to="'/source/' + encodePath(page.path)">원문 보기</router-link> ·
+        <a :href="'/w/' + encodePath(page.path) + '.md'" target="_blank" rel="noopener">.md</a>
         <h4>역링크 <span class="muted">{{ backlinks?.length ?? '' }}</span></h4>
         <p v-if="backlinks && !backlinks.length" class="muted">이 문서를 참조하는 문서가 없습니다.</p>
         <ul v-else>

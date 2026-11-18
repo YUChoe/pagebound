@@ -1,6 +1,7 @@
 package io.github.yuchoe.pagebound.core.page;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.nio.file.Path;
 
@@ -59,6 +60,21 @@ class HistoryServiceTest {
                 new DiffRow("equal", 4, 4, "d", "d"),
                 new DiffRow("insert", null, 5, null, "e"));
         assertThat(history.diff(id, 0, 1).rows()).extracting(DiffRow::type).containsOnly("insert");
+    }
+
+    @Test
+    void codeBlockDefaultCollapsedTogglesOnlyCollapsedToken() {
+        String md = "```mermaid\ngraph TD\n```\n\n```java title=\"A.java\" {2}\na\n```\n\n- 목록\n  ```\n  x\n  ```\n";
+        long id = f.writes.create("code", null, md, null, null, false, Actor.web(1)).id();
+        f.writes.setCodeBlockCollapsed(id, 1, 1, true, Actor.web(1));
+        assertThat(f.content(id)).contains("```java title=\"A.java\" {2} collapsed\n");
+        var saved = f.writes.setCodeBlockCollapsed(id, 2, 2, true, Actor.web(1));
+        assertThat(f.content(id)).contains("  ```collapsed\n  x\n");
+        f.writes.setCodeBlockCollapsed(id, saved.version(), 1, false, Actor.web(1));
+        assertThat(f.content(id)).contains("```java title=\"A.java\" {2}\na");
+        assertThat(history.revisions(id, 1).getFirst().summary()).isEqualTo("코드블록 기본 접힘 변경");
+        assertThatThrownBy(() -> f.writes.setCodeBlockCollapsed(id, 1, 1, true, Actor.web(1)))
+                .extracting("code").isEqualTo("VERSION_CONFLICT");
     }
 
     @Test

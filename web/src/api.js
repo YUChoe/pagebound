@@ -54,6 +54,7 @@ export const api = {
   createPage: (body) => json('POST', '/api/v1/pages', body),
   createDraft: () => request('POST', '/api/v1/pages/drafts'),
   updatePage: (id, body) => json('PUT', `/api/v1/pages/${id}`, body),
+  setCodeBlockCollapsed: (id, index, body) => json('PATCH', `/api/v1/pages/${id}/code-blocks/${index}`, body),
   attachments: (pageId) => request('GET', `/api/v1/pages/${pageId}/attachments`),
   upload: (pageId, file, name) => {
     const form = new FormData()

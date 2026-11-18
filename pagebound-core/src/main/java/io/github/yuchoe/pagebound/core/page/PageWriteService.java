@@ -207,6 +207,25 @@ public class PageWriteService {
         return ids.size();
     }
 
+    /**
+     * 코드블록 기본 접힘 변경 (spec/features/F9-code-blocks.md 4.3절): index번째 펜스(0부터, mermaid 포함)의
+     * info string에서 collapsed 토큰만 추가·제거해 새 리비전으로 저장. version 불일치는 409.
+     */
+    @Transactional
+    public Saved setCodeBlockCollapsed(long id, int version, int index, boolean collapsed, Actor actor) {
+        String content = load(id).content();
+        List<MarkdownAnalyzer.Range> infos = analyzer.fenceInfos(content);
+        if (index < 0 || index >= infos.size()) {
+            throw WikiException.notFound("code block " + index);
+        }
+        MarkdownAnalyzer.Range r = infos.get(index);
+        String info = content.substring(r.start(), r.end());
+        String without = info.replaceAll("(^|\\s+)collapsed(?=\\s|$)", "").strip();
+        String next = collapsed ? (without.isEmpty() ? "collapsed" : without + " collapsed") : without;
+        String newContent = content.substring(0, r.start()) + next + content.substring(r.end());
+        return update(id, version, null, newContent, null, "코드블록 기본 접힘 변경", null, null, false, actor);
+    }
+
     /** 초안 1건 수동 삭제 (첨부 파일 포함). 초안이 아니면 false. */
     @Transactional
     public boolean deleteDraft(long id) {

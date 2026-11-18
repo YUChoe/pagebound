@@ -55,6 +55,20 @@ public final class MarkdownAnalyzer {
         return ranges;
     }
 
+    /** 펜스 코드블록의 info string 위치 (문서 순서). info가 없으면 여는 펜스 바로 뒤 빈 구간. */
+    public List<Range> fenceInfos(String markdown) {
+        List<Range> infos = new ArrayList<>();
+        for (Node node : PARSER.parse(markdown).getDescendants()) {
+            if (node instanceof FencedCodeBlock fence) {
+                var info = fence.getInfo();
+                int start = info.isNull() || info.isEmpty() ? fence.getOpeningMarker().getEndOffset() : info.getStartOffset();
+                int end = info.isNull() || info.isEmpty() ? start : info.getEndOffset();
+                infos.add(new Range(start, end));
+            }
+        }
+        return infos;
+    }
+
     public static boolean inAny(List<Range> ranges, int offset) {
         for (Range r : ranges) {
             if (r.contains(offset)) {

@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -34,6 +35,10 @@ public class PageWriteController {
                                 Integer section, String path, Boolean createParents) {
     }
 
+    /** 코드블록 기본 접힘 변경 (F9 4.3절) */
+    public record CodeBlockRequest(int version, Boolean collapsed) {
+    }
+
     private final PageWriteService writes;
     private final CurrentUser currentUser;
 
@@ -57,6 +62,13 @@ public class PageWriteController {
     @GetMapping("/pages/{id}/source")
     public PageWriteService.Source source(@PathVariable long id, @RequestParam(required = false) Integer section) {
         return writes.source(id, section);
+    }
+
+    @PatchMapping("/pages/{id}/code-blocks/{index}")
+    public PageWriteService.Saved codeBlock(@PathVariable long id, @PathVariable int index, @RequestBody CodeBlockRequest r,
+                                            Authentication auth) {
+        return writes.setCodeBlockCollapsed(id, r.version(), index, Boolean.TRUE.equals(r.collapsed()),
+                currentUser.actor(auth));
     }
 
     @PutMapping("/pages/{id}")

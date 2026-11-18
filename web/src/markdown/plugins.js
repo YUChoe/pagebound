@@ -118,6 +118,8 @@ export function blockPlugin(md) {
   const escape = md.utils.escapeHtml
   md.renderer.rules.fence = (tokens, idx) => {
     const token = tokens[idx]
+    // 문서 안 펜스 순번 (서버 PATCH code-blocks/{index}와 같은 기준: mermaid 포함 모든 펜스)
+    const fenceIndex = tokens.slice(0, idx).filter((t) => t.type === 'fence').length
     const info = parseInfo(token.info)
     const code = token.content.replace(/\n$/, '')
     if (info.lang === 'mermaid') {
@@ -131,6 +133,8 @@ export function blockPlugin(md) {
       `data-linenums="${info.lineNumbers ? 1 : 0}"`,
       `data-start="${info.start}"`,
       `data-lines="${lines}"`,
+      `data-highlight="${escape(info.highlight)}"`,
+      `data-index="${fenceIndex}"`,
     ].join(' ')
     const cls = info.lang ? ` class="language-${escape(info.lang)}"` : ''
     return `<div class="codeblock" ${attrs}><pre><code${cls}>${escape(code)}</code></pre></div>\n`

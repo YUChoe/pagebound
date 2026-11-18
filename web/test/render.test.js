@@ -101,6 +101,6 @@ describe('코드블록', () => {
     const block = el.querySelector('.codeblock')
     expect(block.classList.contains('is-clamped')).toBe(true)
     expect(block.querySelector('.cb-more').textContent).toBe('5줄 더 보기')
-    expect(block.querySelector('.cb-gutter').textContent.split('\n')).toHaveLength(30)
+    expect(block.querySelectorAll('.cb-gutter span')).toHaveLength(30)
   })
 })

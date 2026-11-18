@@ -35,6 +35,16 @@ const rendered = computed(() => (page.value
   ? renderMarkdown(page.value.content, { path: page.value.path, links: page.value.links })
   : { html: '', sections: [] }))
 
+// 코드블록 ⋮ → 기본 접힘 저장/해제 (F9 4.3절): 새 리비전 저장 후 다시 불러온다
+async function saveDefaultCollapsed(index, collapsed) {
+  try {
+    await api.setCodeBlockCollapsed(page.value.id, index, { version: page.value.version, collapsed })
+  } catch (e) {
+    alert(e.body?.code === 'VERSION_CONFLICT' ? '다른 사람이 문서를 바꿨습니다. 새로고침 후 다시 시도하세요.' : '저장하지 못했습니다')
+  }
+  await loadPage()
+}
+
 async function loadPage() {
   const path = routePath(route)
   status.value = 'loading'
@@ -72,7 +82,7 @@ async function enhance() {
     editBase: canEdit() ? '/edit/' + encodePath(page.value.path) : null,
     permalinkBase: permalink(),
   })
-  code = enhanceCodeBlocks(el, page.value.id)
+  code = enhanceCodeBlocks(el, page.value.id, { onDefaultCollapsed: canEdit() ? saveDefaultCollapsed : null })
   codeCount.value = code.count
   mermaidObserver = enhanceMermaid(el)
   enhanceImages(el, (src, alt) => { lightbox.value = { src, alt } })
@@ -81,7 +91,7 @@ async function enhance() {
   // 성능 측정점 (spec/features/F5-page-view.md 4절): DOM 삽입 + 보강 소요 시간
   performance.measure('pb:enhance', { start: t0 })
   if (route.query.hl) highlightInPage(el, String(route.query.hl).split(/\s+/))
-  if (route.hash) scrollToAnchor(decodeURIComponent(route.hash.substring(1)))
+  if (route.hash && !code.revealLine(route.hash)) scrollToAnchor(decodeURIComponent(route.hash.substring(1)))
 }
 
 // 본문 내부 링크는 SPA 라우팅

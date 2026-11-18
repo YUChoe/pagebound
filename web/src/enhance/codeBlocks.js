@@ -1,6 +1,8 @@
-// 코드블록 보기/접기 (spec/features/F9-code-blocks.md P0)
+// 코드블록 보기/접기 (spec/features/F9-code-blocks.md P0, P1: 줄 강조·줄 앵커·전체화면·⋮ 메뉴·until-found)
 import hljs from 'highlight.js/lib/common'
 import { copyText, hash, load, save } from './storage.js'
+import { applyLines, parseLineAnchor } from './codeLines.js'
+import { fullscreen, menuButton } from './codeTools.js'
 
 const CLAMP_LINES = 25
 const NO_HIGHLIGHT_LINES = 2000
@@ -72,14 +74,32 @@ function highlight(block, codeEl, lang) {
   }
 }
 
+// 하이라이트 후 줄 단위로 나눈다 (하이라이트를 건너뛴 블록도 줄 span은 만든다)
+function render(block, codeEl, lang) {
+  if (block.dataset.split === '1') return
+  highlight(block, codeEl, lang)
+  applyLines(block, codeEl)
+}
+
+function markLine(block, line) {
+  document.querySelectorAll('.cb-line.cb-target').forEach((el) => el.classList.remove('cb-target'))
+  const el = block.querySelector(`.cb-line[data-line="${line}"]`)
+  el?.classList.add('cb-target')
+  return el
+}
+
+// 접힘은 hidden="until-found": 브라우저 찾기(Ctrl+F)가 접힌 내용도 찾고 beforematch에서 펼친다
 function setCollapsed(block, collapsed) {
   block.classList.toggle('is-collapsed', collapsed)
+  const pre = block.querySelector('pre')
+  if (pre && collapsed) pre.setAttribute('hidden', 'until-found')
+  else if (pre) pre.removeAttribute('hidden')
   const toggle = block.querySelector('.cb-toggle')
   if (toggle) toggle.textContent = collapsed ? '▸' : '▾'
 }
 
 // container 안의 .codeblock 에 헤더·접기·높이 제한·줄 번호·복사를 붙인다. 반환: { setAll(collapsed) }
-export function enhanceCodeBlocks(container, pageId) {
+export function enhanceCodeBlocks(container, pageId, { onDefaultCollapsed } = {}) {
   const blocks = [...container.querySelectorAll('.codeblock')]
   const titleCount = new Map()
   const observer = 'IntersectionObserver' in window
@@ -87,12 +107,12 @@ export function enhanceCodeBlocks(container, pageId) {
       entries.forEach((e) => {
         if (!e.isIntersecting) return
         observer.unobserve(e.target)
-        highlight(e.target, e.target.querySelector('code'), e.target.dataset.lang)
+        render(e.target, e.target.querySelector('code'), e.target.dataset.lang)
       })
     }, { rootMargin: '200px' })
     : null
 
-  const items = blocks.map((block) => {
+  const items = blocks.map((block, blockIndex) => {
     const codeEl = block.querySelector('code')
     const text = codeEl.textContent
     const { lang, title } = block.dataset
@@ -133,6 +153,8 @@ export function enhanceCodeBlocks(container, pageId) {
         e.target.textContent = '복사됨'
         setTimeout(() => { e.target.textContent = '복사' }, 1500)
       }),
+      button('⤢', '전체화면', () => fullscreen(block)),
+      menuButton(button, block, text, { onDefaultCollapsed }),
     )
     header.append(toggle, meta, preview, actions)
     block.prepend(header)
@@ -142,7 +164,16 @@ export function enhanceCodeBlocks(container, pageId) {
       const gutter = document.createElement('span')
       gutter.className = 'cb-gutter'
       gutter.setAttribute('aria-hidden', 'true')
-      gutter.textContent = Array.from({ length: lines }, (_, i) => start + i).join('\n')
+      gutter.innerHTML = Array.from({ length: lines }, (_, i) => `<span data-line="${start + i}">${start + i}</span>`).join('')
+      gutter.title = '줄 번호를 누르면 그 줄 링크를 복사합니다'
+      gutter.addEventListener('click', async (e) => {
+        const line = e.target.dataset?.line
+        if (!line) return
+        const anchor = `code-${blockIndex + 1}-L${line}`
+        history.replaceState(history.state, '', '#' + anchor)
+        await copyText(window.location.href)
+        markLine(block, Number(line))
+      })
       block.querySelector('pre').prepend(gutter)
     }
 
@@ -158,9 +189,13 @@ export function enhanceCodeBlocks(container, pageId) {
 
     const stored = load(foldKey(pageId, blockKey))
     setCollapsed(block, stored ?? block.dataset.collapsed === '1')
+    block.querySelector('pre').addEventListener('beforematch', () => {
+      setCollapsed(block, false)
+      rememberFold(pageId, blockKey, false)
+    })
 
     if (observer) observer.observe(block)
-    else highlight(block, codeEl, lang)
+    else render(block, codeEl, lang)
     return { block, blockKey }
   })
 
@@ -174,6 +209,17 @@ export function enhanceCodeBlocks(container, pageId) {
     },
     disconnect() {
       observer?.disconnect()
+    },
+    // #code-{n}-L{line} 진입: 블록을 펼치고 줄을 강조해 스크롤. 처리했으면 true
+    revealLine(hashText) {
+      const anchor = parseLineAnchor(hashText)
+      const item = anchor && items[anchor.block - 1]
+      if (!item) return false
+      setCollapsed(item.block, false)
+      render(item.block, item.block.querySelector('code'), item.block.dataset.lang)
+      item.block.classList.remove('is-clamped')
+      markLine(item.block, anchor.line)?.scrollIntoView?.({ block: 'center' })
+      return true
     },
   }
 }

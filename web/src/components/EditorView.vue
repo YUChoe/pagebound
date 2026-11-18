@@ -6,6 +6,7 @@ import MarkdownEditor from './editor/MarkdownEditor.vue'
 import TagInput from './editor/TagInput.vue'
 import AttachmentPanel from './editor/AttachmentPanel.vue'
 import ConflictDialog from './editor/ConflictDialog.vue'
+import CodeBlockDialog from './editor/CodeBlockDialog.vue'
 import { api, ApiError } from '../api.js'
 import { routePath } from '../router.js'
 import { encodePath, lastSegment } from '../markdown/wikiPaths.js'
@@ -286,6 +287,13 @@ function reloadServer() {
   loadEditor()
 }
 
+const codeDialog = ref(false)
+
+function insertCodeBlock(fence) {
+  codeDialog.value = false
+  editor.value.insertBlock(fence)
+}
+
 function cancel() {
   router.push(mode.value === 'create' ? '/w/home' : '/w/' + encodePath(path.value))
 }
@@ -294,7 +302,7 @@ const tools = [
   ['제목', () => editor.value.insertBlock('## 제목')],
   ['굵게', () => editor.value.wrap('**', '**', '굵게')],
   ['코드', () => editor.value.wrap('`', '`', 'code')],
-  ['코드블록', () => editor.value.insertBlock('```\n코드\n```')],
+  ['코드블록', () => { codeDialog.value = true }],
   ['링크', () => editor.value.wrap('[', '](https://)', '링크')],
   ['위키 링크', () => editor.value.wrap('[[', ']]', '문서 경로')],
   ['표', () => editor.value.insertBlock('| 항목 | 내용 |\n|------|------|\n|  |  |')],
@@ -351,6 +359,7 @@ watch(() => [path.value, section.value], loadEditor, { immediate: true })
       </div>
       <router-link :to="'/w/' + encodePath(path)">문서 보기</router-link>
     </div>
+    <CodeBlockDialog v-if="codeDialog" @close="codeDialog = false" @insert="insertCodeBlock" />
     <div class="toolbar">
       <button v-for="[label, run] in tools" :key="label" type="button" @click="run">{{ label }}</button>
     </div>

@@ -98,7 +98,8 @@
   mask-image: linear-gradient(to bottom, #000 80%, transparent);
 }
 .cb-more { display: block; width: 100%; border: 0; border-top: 1px solid var(--border); border-radius: 0 0 6px 6px; }
-.codeblock.is-collapsed pre, .codeblock.is-collapsed .cb-more { display: none; }
+.codeblock.is-collapsed .cb-more { display: none; }
+.codeblock.is-collapsed pre[hidden] { padding: 0; border: 0; min-height: 0; }
 .codeblock.is-collapsed .cb-header { border-bottom: 0; }
 .codeblock.is-collapsed .cb-preview { display: block; }
 
@@ -114,3 +115,21 @@
 /* 섹션 영구 링크 복사 (spec/features/F5-page-view.md 2.1절) */
 .sec-anchor { visibility: hidden; border: 0; background: transparent; color: var(--muted); font-size: 0.7em; padding: 0 6px; vertical-align: middle; }
 :is(h1, h2, h3, h4, h5, h6):hover > .sec-anchor, .sec-anchor:focus { visibility: visible; }
+
+/* 코드블록 P1 (F9): 줄 단위, 줄 강조·앵커, 전체화면, ⋮ 메뉴 */
+.codeblock .cb-line { display: block; min-height: 1lh; }
+.codeblock .cb-line.cb-hl { background: #fff8c5; }
+.codeblock .cb-line.cb-target { background: #fde68a; }
+.cb-gutter span { display: block; cursor: pointer; }
+.cb-gutter span:hover { color: var(--accent, #0b6e4f); text-decoration: underline; }
+.cb-menu-wrap { position: relative; display: inline-block; }
+.cb-menu { position: absolute; right: 0; top: 100%; z-index: 40; background: #fff; border: 1px solid #d0d7de; border-radius: 6px; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12); padding: 4px; min-width: 160px; }
+.cb-menu .cb-btn { display: block; width: 100%; text-align: left; }
+.cb-modal { position: fixed; inset: 0; z-index: 100; background: rgba(0, 0, 0, 0.45); display: flex; align-items: stretch; justify-content: center; padding: 24px; }
+.cb-modal-panel { background: #fff; border-radius: 8px; width: 100%; overflow: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.cb-modal-close { align-self: flex-end; }
+.cb-modal pre { max-height: none; overflow: auto; margin: 0; }
+.cb-raw { white-space: pre; font-family: var(--mono); font-size: 13px; }
+@media print {
+  .codeblock pre[hidden] { content-visibility: visible; display: flex !important; padding: revert; border: revert; }
+}

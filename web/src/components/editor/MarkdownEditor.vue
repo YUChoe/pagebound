@@ -5,6 +5,7 @@ import { EditorView, drawSelection, highlightActiveLine, keymap, lineNumbers } f
 import { EditorState } from '@codemirror/state'
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands'
 import { markdown } from '@codemirror/lang-markdown'
+import { languages } from '@codemirror/language-data'
 import { defaultHighlightStyle, syntaxHighlighting } from '@codemirror/language'
 import { autocompletion, completionKeymap } from '@codemirror/autocomplete'
 import { htmlToMarkdown, isRichHtml, isTsv, isUrl, tsvToMarkdown } from '../../editor/clipboard.js'
@@ -102,7 +103,7 @@ onMounted(() => {
         drawSelection(),
         highlightActiveLine(),
         EditorView.lineWrapping,
-        markdown(),
+        markdown({ codeLanguages: languages }),
         syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
         autocompletion({ override: [wikiLinkSource] }),
         keymap.of([

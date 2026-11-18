@@ -361,3 +361,7 @@ tr.muted td { color: #9ca3af; }
 
 mark.hl { background: #fff3a3; padding: 0 1px; border-radius: 2px; }
 .section-link { display: inline-block; margin-top: 2px; }
+
+.source-view .cm-editor { border: 1px solid var(--border); border-radius: 6px; max-height: 75vh; font-size: 13px; }
+.source-view .cm-scroller { font-family: var(--mono); }
+.settings-form label.inline { flex-direction: row; align-items: center; gap: 6px; }
