@@ -11,7 +11,7 @@
 | 1 | `api_tokens` 서비스: 발급(1회 표시), 목록, 폐기, 만료, 마지막 사용 시각 | 폐기 토큰 401 |
 | 2 | Bearer 인증 필터 (`/mcp`, `/api/v1/**`), 사용자 비활성 시 무효 | 미인증 `/mcp` 401 |
 | 3 | 토큰 관리 화면 (사용자 설정, 관리자 전체 목록) | 시각 확인 |
-| 4 | MCP 서버 설정 (`spring-ai-starter-mcp-server-webmvc`, STREAMABLE, `/mcp`), scope별 tool filter | read 토큰 `tools/list`에 쓰기 도구 없음 |
+| 4 | MCP 서버 설정: `HttpServletStreamableServerTransportProvider` 서블릿 빈(`/mcp`), `contextExtractor`로 토큰 scope 추출, `addToolFilter`로 scope별 도구 노출 | read 토큰 `tools/list`에 쓰기 도구 없음 |
 | 5 | 읽기 도구 10개 (`get_page` 상한/섹션, `get_outline`, `get_attachment` image content 포함) | 도구별 테스트 |
 | 6 | 쓰기 도구 6개 (서비스 재사용, `base_version`, `edits[]` 유일성, `dry_run`), 오류 코드 | `VERSION_CONFLICT`, `EDIT_NOT_UNIQUE` 재현 |
 | 7 | 토큰당 rate limit, MCP 호출 로그, 역사 화면 에이전트 배지 | 61번째 호출 `RATE_LIMITED` |

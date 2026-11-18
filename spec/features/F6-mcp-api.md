@@ -6,9 +6,9 @@
 
 | 항목 | 사양 |
 |------|------|
-| 프로토콜 | MCP Streamable HTTP, 엔드포인트 `/mcp` (`spring-ai-starter-mcp-server-webmvc`, `protocol: STREAMABLE`) |
+| 프로토콜 | MCP Streamable HTTP, 엔드포인트 `/mcp` (MCP Java SDK `HttpServletStreamableServerTransportProvider`, Spring AI 미사용) |
 | 인증 | `Authorization: Bearer <token>`. 사용자 설정 화면에서 발급, 발급 시 1회만 표시 |
-| 권한 | 토큰 scope `read` / `write`. 실제 권한 = min(scope, 사용자 role). `read` 토큰에는 쓰기 도구 목록 자체를 노출하지 않음 (tool filter) |
+| 권한 | 토큰 scope `read` / `write`. 실제 권한 = min(scope, 사용자 role). `read` 토큰에는 쓰기 도구 목록 자체를 노출하지 않음 (`contextExtractor`로 토큰 scope 추출 → `addToolFilter`) |
 | 감사 | 모든 쓰기는 `page_revisions.source='mcp'`, `token_id` 기록. 역사 화면에 "에이전트" 배지 |
 | 제한 | 토큰당 분당 60회, 첨부 업로드 1건 10MB (base64 전송 고려) |
 | 공유 로직 | MCP 도구, REST API, 웹 UI가 동일 서비스 계층 사용 |

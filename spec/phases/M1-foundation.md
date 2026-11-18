@@ -8,7 +8,7 @@
 
 | # | 작업 | 산출물 | 검증 |
 |---|------|--------|------|
-| 1 | Maven 멀티모듈 생성 (`pagebound-core`, `pagebound-server`, `pagebound-migrator`), Spring Boot/Spring AI BOM 버전 확정 | `pom.xml` | `mvn -q package` 성공 |
+| 1 | Maven 멀티모듈 생성 (`pagebound-core`, `pagebound-server`, `pagebound-migrator`), Spring Boot·MCP Java SDK 버전 확정 | `pom.xml` | `mvn -q package` 성공 |
 | 2 | Flyway `V1__init.sql` (DDL + FTS 트리거), SQLite PRAGMA 설정 | 마이그레이션 스크립트 | 빈 DB 생성 후 테이블 10개(+FTS) 확인 |
 | 3 | `MarkdownAnalyzer` (flexmark): 위키 링크 추출(코드 제외), 섹션 분할, 목차, 평문 추출 | `pagebound-core` | 단위 테스트: bash `[[ ]]` 제외, setext/ATX 헤딩, 코드펜스 내 `#` 무시 |
 | 4 | 저장소/서비스 최소 구현: 문서 생성(경로 계산), 리비전, 링크 인덱스, 첨부 저장 | `pagebound-core` | 단위 테스트 |
@@ -18,7 +18,7 @@
 ## 완료 기준
 
 1. `java -jar pagebound-migrator.jar --source database.sqlite --target data/` 실행 → `pagebound.db`, `data/attachments/`, `migration-report.md` 생성
-2. 문서 194, alias 168/168, 첨부 sha256 전 건 일치, 태그 조합 보존
+2. 문서 195(원본 168 + 가상 폴더 26 + 미분류 첨부 1), alias 168/168, 첨부 sha256 전 건 일치, 태그 조합 보존
 3. 같은 명령 `--force` 재실행 시 동일 결과 (건수·해시 일치)
 
 ## 미포함

@@ -1,0 +1,10 @@
+pagebound:
+  data-dir: ./data
+
+spring:
+  application:
+    name: pagebound-server
+  datasource:
+    url: jdbc:sqlite:${pagebound.data-dir}/pagebound.db?foreign_keys=true&journal_mode=WAL&busy_timeout=5000
+    hikari:
+      maximum-pool-size: 4
