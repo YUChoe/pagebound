@@ -59,7 +59,7 @@ public class AttachmentController {
     public AttachmentService.Renamed rename(@PathVariable long pageId, @PathVariable long attachmentId,
                                             @RequestBody RenameRequest r, Authentication auth) {
         return attachments.rename(pageId, attachmentId, r.filename(), Boolean.TRUE.equals(r.rewriteContent()),
-                currentUser.id(auth), "web");
+                currentUser.actor(auth));
     }
 
     @DeleteMapping("/{attachmentId}")

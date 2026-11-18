@@ -25,7 +25,8 @@ import jakarta.servlet.http.HttpServletResponse;
 public class LegacyRedirectFilter extends OncePerRequestFilter {
 
     private static final List<String> RESERVED = List.of("/api/", "/p/", "/assets/", "/login", "/logout", "/edit/", "/blame/",
-            "/history/", "/backlinks/", "/tags", "/recent", "/search", "/source/", "/favicon", "/index.html");
+            "/history/", "/backlinks/", "/tags", "/recent", "/search", "/source/", "/favicon", "/index.html",
+            "/settings", "/mcp");
 
     private final PageReadService pages;
 

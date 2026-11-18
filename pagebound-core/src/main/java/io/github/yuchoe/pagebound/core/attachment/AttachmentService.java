@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.unit.DataSize;
 
+import io.github.yuchoe.pagebound.core.Actor;
 import io.github.yuchoe.pagebound.core.WikiException;
 import io.github.yuchoe.pagebound.core.page.PageWriteService;
 
@@ -77,8 +78,8 @@ public class AttachmentService {
 
     /** 이름 변경. rewriteContent=true면 본문의 URL도 치환하고 리비전을 남긴다. */
     @Transactional
-    public Renamed rename(long pageId, long attachmentId, String newName, boolean rewriteContent, long actorId,
-                          String source) {
+    public Renamed rename(long pageId, long attachmentId, String newName, boolean rewriteContent,
+                          Actor actor) {
         String content = requirePage(pageId);
         Info current = find(pageId, attachmentId);
         String name = sanitize(newName);
@@ -94,7 +95,7 @@ public class AttachmentService {
         int version = currentVersion(pageId);
         if (rewriteContent && content.contains(current.url())) {
             version = pageWrites.replaceContent(pageId, content.replace(current.url(), newUrl),
-                    "첨부 이름 변경: " + current.filename() + " → " + name, actorId, source);
+                    "첨부 이름 변경: " + current.filename() + " → " + name, actor);
         }
         return new Renamed(new Info(attachmentId, name, current.mime(), current.size(), newUrl,
                 isReferenced(pageId, name)), version);

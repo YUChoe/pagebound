@@ -15,6 +15,7 @@
 | 5 | 일괄 API (로그인 필요), 호스트당 동시성 제한 | 익명 401 |
 | 6 | 렌더러: 카드/칩/배지/hover 팝오버, 스켈레톤, 실패 시 일반 링크, 익명용 파싱 결과 칩 | [F10](../features/F10-link-preview.md) 2절 표 |
 | 7 | P1: 위키, 파일 스니펫(F9 컴포넌트 재사용), OpenGraph 프로바이더 + SSRF 방어 | SSRF 차단 테스트 |
+| 8 | MCP `upload_attachment`의 `source_url` (7번 SSRF 방어 재사용, 10MB 상한) — [F6](../features/F6-mcp-api.md) 3.2절 | 사설 IP URL 거부 |
 
 ## 완료 기준
 

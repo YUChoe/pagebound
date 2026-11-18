@@ -34,7 +34,7 @@ public class TreeController {
 
     @PostMapping("/move")
     public PageTreeService.Moved move(@PathVariable long id, @RequestBody MoveRequest r, Authentication auth) {
-        return tree.move(id, r.parentPath(), r.slug(), r.title(), r.position(), currentUser.id(auth), "web");
+        return tree.move(id, r.parentPath(), r.slug(), r.title(), r.position(), currentUser.actor(auth));
     }
 
     /** 휴지통으로 이동. 하위 문서가 있으면 includeChildren=true 필요 (409 HAS_CHILDREN). */

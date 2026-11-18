@@ -27,7 +27,8 @@ public class BlameService {
     public record Hunk(int start, int count, int version) {
     }
 
-    public record RevisionInfo(String author, String createdAt, String source, String action, String summary) {
+    public record RevisionInfo(String author, String createdAt, String source, String action, String summary,
+                               String tokenName) {
     }
 
     public record Blame(long pageId, int version, String content, List<Hunk> hunks,
@@ -169,11 +170,12 @@ public class BlameService {
         Map<Integer, RevisionInfo> out = new LinkedHashMap<>();
         for (int version : new TreeSet<>(attribution)) {
             jdbc.sql("""
-                    SELECT u.name, r.created_at, r.source, r.action, r.summary FROM page_revisions r
-                    LEFT JOIN users u ON u.id = r.author_id WHERE r.page_id = ? AND r.version = ?""")
+                    SELECT u.name, r.created_at, r.source, r.action, r.summary, t.name FROM page_revisions r
+                    LEFT JOIN users u ON u.id = r.author_id LEFT JOIN api_tokens t ON t.id = r.token_id
+                    WHERE r.page_id = ? AND r.version = ?""")
                     .params(pageId, version)
                     .query((rs, n) -> new RevisionInfo(rs.getString(1), rs.getString(2), rs.getString(3),
-                            rs.getString(4), rs.getString(5)))
+                            rs.getString(4), rs.getString(5), rs.getString(6)))
                     .optional().ifPresent(info -> out.put(version, info));
         }
         return out;

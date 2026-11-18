@@ -24,8 +24,6 @@ import io.github.yuchoe.pagebound.core.page.PageWriteService;
 @RequestMapping("/api/v1")
 public class PageWriteController {
 
-    private static final String SOURCE = "web";
-
     /** 선택 항목은 wrapper 타입: Jackson 3는 누락된 primitive를 거부한다(FAIL_ON_NULL_FOR_PRIMITIVES). */
     public record CreateRequest(String path, String title, String content, List<String> tags, String summary,
                                 Boolean createParents) {
@@ -47,7 +45,7 @@ public class PageWriteController {
     @PostMapping("/pages")
     public ResponseEntity<PageWriteService.Saved> create(@RequestBody CreateRequest r, Authentication auth) {
         var saved = writes.create(r.path(), r.title(), r.content(), r.tags(), r.summary(), Boolean.TRUE.equals(r.createParents()),
-                currentUser.id(auth), SOURCE);
+                currentUser.actor(auth));
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
@@ -64,6 +62,6 @@ public class PageWriteController {
     @PutMapping("/pages/{id}")
     public PageWriteService.Saved update(@PathVariable long id, @RequestBody UpdateRequest r, Authentication auth) {
         return writes.update(id, r.version(), r.title(), r.content(), r.tags(), r.summary(), r.section(), r.path(),
-                Boolean.TRUE.equals(r.createParents()), currentUser.id(auth), SOURCE);
+                Boolean.TRUE.equals(r.createParents()), currentUser.actor(auth));
     }
 }

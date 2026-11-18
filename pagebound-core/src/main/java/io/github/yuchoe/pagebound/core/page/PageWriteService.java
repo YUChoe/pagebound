@@ -13,6 +13,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.github.yuchoe.pagebound.core.Actor;
 import io.github.yuchoe.pagebound.core.WikiException;
 import io.github.yuchoe.pagebound.core.attachment.AttachmentStorage;
 import io.github.yuchoe.pagebound.core.markdown.MarkdownAnalyzer;
@@ -56,18 +57,18 @@ public class PageWriteService {
     /** 경로로 새 문서 생성. 부모가 없으면 createParents=true일 때 빈 문서로 함께 만든다. */
     @Transactional
     public Saved create(String path, String title, String content, List<String> tagNames, String summary,
-                        boolean createParents, long actorId, String source) {
+                        boolean createParents, Actor actor) {
         String normalized = validatePath(path);
         if (pages.findActiveIdByPath(normalized).isPresent()) {
             throw new WikiException(409, "PATH_EXISTS", "page already exists: " + normalized);
         }
-        Long parentId = resolveParent(WikiPaths.parentOf(normalized), createParents, actorId, source);
+        Long parentId = resolveParent(WikiPaths.parentOf(normalized), createParents, actor);
         String now = Instant.now().toString();
         String finalTitle = title == null || title.isBlank() ? WikiPaths.lastSegment(normalized) : title.trim();
         long id = pages.insert(new PageStore.NewPage(null, parentId, WikiPaths.lastSegment(normalized), finalTitle,
-                content == null ? "" : content, nextSortOrder(parentId), 1, actorId, actorId, now, now));
+                content == null ? "" : content, nextSortOrder(parentId), 1, actor.userId(), actor.userId(), now, now));
         pages.insertRevision(new PageStore.NewRevision(id, 1, finalTitle, normalized, content == null ? "" : content,
-                "created", source, summary, actorId, null, now));
+                "created", actor.source(), summary, actor.userId(), actor.tokenId(), now));
         if (tagNames != null) {
             tags.replace(id, tagNames);
         }
@@ -91,7 +92,7 @@ public class PageWriteService {
      */
     @Transactional
     public Saved update(long id, int baseVersion, String title, String content, List<String> tagNames, String summary,
-                        Integer section, String publishPath, boolean createParents, long actorId, String source) {
+                        Integer section, String publishPath, boolean createParents, Actor actor) {
         Row row = load(id);
         if (row.version() != baseVersion) {
             throw new WikiException(409, "VERSION_CONFLICT", "page was modified by someone else", Map.of(
@@ -106,7 +107,7 @@ public class PageWriteService {
             if (pages.findActiveIdByPath(path).isPresent()) {
                 throw new WikiException(409, "PATH_EXISTS", "page already exists: " + path);
             }
-            Long parentId = resolveParent(WikiPaths.parentOf(path), createParents, actorId, source);
+            Long parentId = resolveParent(WikiPaths.parentOf(path), createParents, actor);
             if (title == null || title.isBlank()) {
                 finalTitle = WikiPaths.lastSegment(path);
             }
@@ -114,23 +115,23 @@ public class PageWriteService {
                     UPDATE pages SET parent_id = ?, slug = ?, path = ?, title = ?, content = ?, is_draft = 0,
                            sort_order = ?, updated_by = ?, updated_at = ?, created_at = ? WHERE id = ?""")
                     .params(parentId, WikiPaths.lastSegment(path), path, finalTitle, nullToEmpty(content),
-                            nextSortOrder(parentId), actorId, now, now, id)
+                            nextSortOrder(parentId), actor.userId(), now, now, id)
                     .update();
             version = 1;
             pages.insertRevision(new PageStore.NewRevision(id, 1, finalTitle, path, nullToEmpty(content), "created",
-                    source, summary, actorId, null, now));
+                    actor.source(), summary, actor.userId(), actor.tokenId(), now));
         } else {
             String newContent = section == null ? nullToEmpty(content) : mergeSection(row.content(), section, content);
             version = row.version() + 1;
             int updated = jdbc.sql("""
                     UPDATE pages SET title = ?, content = ?, version = ?, updated_by = ?, updated_at = ?
                     WHERE id = ? AND version = ?""")
-                    .params(finalTitle, newContent, version, actorId, now, id, baseVersion).update();
+                    .params(finalTitle, newContent, version, actor.userId(), now, id, baseVersion).update();
             if (updated != 1) {
                 throw new WikiException(409, "VERSION_CONFLICT", "page was modified by someone else");
             }
             pages.insertRevision(new PageStore.NewRevision(id, version, finalTitle, path, newContent, "updated",
-                    source, summary, actorId, null, now));
+                    actor.source(), summary, actor.userId(), actor.tokenId(), now));
         }
         if (tagNames != null) {
             tags.replace(id, tagNames);
@@ -141,7 +142,7 @@ public class PageWriteService {
 
     /** 버전 검사 없이 본문 교체 (첨부 이름 변경에 따른 URL 치환 등 시스템 수정). */
     @Transactional
-    public int replaceContent(long id, String newContent, String summary, long actorId, String source) {
+    public int replaceContent(long id, String newContent, String summary, Actor actor) {
         Row row = load(id);
         if (row.draft()) {
             jdbc.sql("UPDATE pages SET content = ? WHERE id = ?").params(newContent, id).update();
@@ -150,9 +151,9 @@ public class PageWriteService {
         String now = Instant.now().toString();
         int version = row.version() + 1;
         jdbc.sql("UPDATE pages SET content = ?, version = ?, updated_by = ?, updated_at = ? WHERE id = ?")
-                .params(newContent, version, actorId, now, id).update();
+                .params(newContent, version, actor.userId(), now, id).update();
         pages.insertRevision(new PageStore.NewRevision(id, version, row.title(), row.path(), newContent, "updated",
-                source, summary, actorId, null, now));
+                actor.source(), summary, actor.userId(), actor.tokenId(), now));
         links.rebuild(id);
         return version;
     }
@@ -237,7 +238,7 @@ public class PageWriteService {
         return normalized;
     }
 
-    private Long resolveParent(String parentPath, boolean createParents, long actorId, String source) {
+    private Long resolveParent(String parentPath, boolean createParents, Actor actor) {
         if (parentPath.isEmpty()) {
             return null;
         }
@@ -249,7 +250,7 @@ public class PageWriteService {
             throw new WikiException(409, "PARENT_NOT_FOUND", "parent page not found: " + parentPath,
                     Map.of("parent", parentPath));
         }
-        return create(parentPath, null, "", null, "하위 문서 생성 시 자동 생성", true, actorId, source).id();
+        return create(parentPath, null, "", null, "하위 문서 생성 시 자동 생성", true, actor).id();
     }
 
     private int nextSortOrder(Long parentId) {

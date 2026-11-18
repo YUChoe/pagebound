@@ -279,6 +279,10 @@ mark { background: #fff1a8; color: inherit; padding: 0 1px; }
 .code-wrap .blame-text { white-space: pre-wrap; word-break: break-all; }
 .badge.src-migration { background: #eef1f4; }
 .badge.src-system { background: #fdf3d6; }
+.badge.src-api { background: #e0eefb; }
+.token-form { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 12px 0; }
+.token-form input { flex: 1 1 220px; }
+.token-issued code { word-break: break-all; }
 @media (max-width: 1023px) {
   .blame-row { grid-template-columns: 140px 40px minmax(0, 1fr); }
 }

@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import io.github.yuchoe.pagebound.core.Actor;
 import io.github.yuchoe.pagebound.core.CoreFixture;
 import io.github.yuchoe.pagebound.core.search.SearchService.Hit;
 
@@ -27,7 +28,7 @@ class SearchServiceTest {
         f.page("git/설치", "Apache httpd 와 nginx 설치. /etc/hosts 수정, nes-api 배포", "git");
         f.page("통계", "다른 문서", "기타");
         long draft = f.writes.createDraft(1);
-        f.writes.replaceContent(draft, "파티션 초안 문서", null, 1, "web");
+        f.writes.replaceContent(draft, "파티션 초안 문서", null, Actor.web(1));
     }
 
     @AfterEach

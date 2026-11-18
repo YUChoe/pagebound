@@ -23,7 +23,7 @@ function info(version) {
 
 function tooltip(version) {
   const r = info(version)
-  return [`v${version}`, r.author ?? '알 수 없음', formatDate(r.createdAt), SOURCE_LABELS[r.source] ?? r.source,
+  return [`v${version}`, r.author ?? '알 수 없음', formatDate(r.createdAt), (SOURCE_LABELS[r.source] ?? r.source) + (r.tokenName ? ` (${r.tokenName})` : ''),
     r.summary ? `요약: ${r.summary}` : ''].filter(Boolean).join(' · ')
 }
 
@@ -70,7 +70,8 @@ watch(() => routePath(route), load, { immediate: true })
             <span class="blame-author">{{ info(row.version).author ?? '알 수 없음' }}</span>
             <span class="muted">{{ relativeTime(info(row.version).createdAt) }}</span>
             <span v-if="info(row.version).source !== 'web'" class="badge" :class="'src-' + info(row.version).source">
-              {{ SOURCE_LABELS[info(row.version).source] ?? info(row.version).source }}</span>
+              {{ SOURCE_LABELS[info(row.version).source] ?? info(row.version).source }}{{
+                info(row.version).tokenName ? ' · ' + info(row.version).tokenName : '' }}</span>
           </template>
         </span>
         <span class="blame-no" role="cell">{{ row.no }}</span>

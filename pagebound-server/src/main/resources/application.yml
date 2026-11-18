@@ -5,6 +5,13 @@ pagebound:
     max-file-size: 50MB
   trash:
     retention-days: 30
+  site:
+    base-url: ""   # 비우면 접속 주소. 리버스 프록시 뒤라면 외부 주소 (MCP 영구 링크용)
+
+springdoc:
+  api-docs:
+    path: /api/docs
+  paths-to-match: /api/v1/**
 
 spring:
   application:

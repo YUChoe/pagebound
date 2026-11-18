@@ -6,6 +6,7 @@ import RecentView from './components/RecentView.vue'
 import SearchView from './components/SearchView.vue'
 import TagsView from './components/TagsView.vue'
 import LoginView from './components/LoginView.vue'
+import TokensView from './components/TokensView.vue'
 import NotFound from './components/NotFound.vue'
 
 export const router = createRouter({
@@ -19,6 +20,7 @@ export const router = createRouter({
     { path: '/search', name: 'search', component: SearchView },
     { path: '/tags/:names(.*)*', name: 'tags', component: TagsView },
     { path: '/login', name: 'login', component: LoginView },
+    { path: '/settings/tokens', name: 'tokens', component: TokensView },
     { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFound },
   ],
   scrollBehavior(to, from, saved) {

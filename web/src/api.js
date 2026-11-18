@@ -60,4 +60,7 @@ export const api = {
   login: (username, password) => request('POST', '/login', q({ username, password }),
     { 'Content-Type': 'application/x-www-form-urlencoded' }),
   logout: () => request('POST', '/logout'),
+  tokens: () => request('GET', '/api/v1/me/tokens'),
+  issueToken: (body) => json('POST', '/api/v1/me/tokens', body),
+  revokeToken: (id) => request('DELETE', `/api/v1/me/tokens/${id}`),
 }

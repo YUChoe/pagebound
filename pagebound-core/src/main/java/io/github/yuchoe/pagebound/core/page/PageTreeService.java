@@ -14,6 +14,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.github.yuchoe.pagebound.core.Actor;
 import io.github.yuchoe.pagebound.core.WikiException;
 import io.github.yuchoe.pagebound.core.attachment.AttachmentStorage;
 import io.github.yuchoe.pagebound.core.audit.AuditLog;
@@ -62,7 +63,7 @@ public class PageTreeService {
      */
     @Transactional
     public Moved move(long id, String newParentPath, String newSlug, String newTitle, Integer position,
-                      long actorId, String source) {
+                      Actor actor) {
         Row row = load(id);
         if (row.deletedAt() != null) {
             throw WikiException.notFound("page " + id);
@@ -126,10 +127,10 @@ public class PageTreeService {
         jdbc.sql("""
                 UPDATE pages SET parent_id = ?, slug = ?, title = ?, content = ?, version = ?, updated_by = ?,
                        updated_at = ? WHERE id = ?""")
-                .params(parentId, slug, title, content, version, actorId, now, id).update();
+                .params(parentId, slug, title, content, version, actor.userId(), now, id).update();
         setPosition(parentId, id, position == null && !sameParent ? Integer.MAX_VALUE : position);
         pages.insertRevision(new PageStore.NewRevision(id, version, title, newPath, content,
-                newPath.equals(oldPath) ? "updated" : "moved", source, null, actorId, null, now));
+                newPath.equals(oldPath) ? "updated" : "moved", actor.source(), null, actor.userId(), actor.tokenId(), now));
 
         subtree.forEach((pid, p) -> {
             if (!p[0].equals(p[1])) {
@@ -148,7 +149,7 @@ public class PageTreeService {
                     .params(e.getValue(), v, now, src.id()).update();
             pages.insertRevision(new PageStore.NewRevision(src.id(), v, src.title(), src.path(), e.getValue(),
                     "link-updated", "system", "문서 이동에 따른 링크 갱신: " + oldPath + " → " + newPath,
-                    actorId, null, now));
+                    actor.userId(), actor.tokenId(), now));
             linkUpdated++;
         }
         for (long sourceId : sources) {

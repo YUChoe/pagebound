@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import io.github.yuchoe.pagebound.core.Actor;
 import io.github.yuchoe.pagebound.core.CoreFixture;
 import io.github.yuchoe.pagebound.core.WikiException;
 
@@ -43,7 +44,7 @@ class PageTreeServiceTest {
         long home = f.page("home", "[[nems/통계]] [[nems/통계/하위|하위 링크]] `[[nems/통계]]`");
         f.page("archive", "");
 
-        var moved = f.tree.move(stat, "archive", null, "통계 보관", null, 1, "web");
+        var moved = f.tree.move(stat, "archive", null, "통계 보관", null, Actor.web(1));
         assertThat(moved.path()).isEqualTo("archive/통계");
         assertThat(f.path(stat)).isEqualTo("archive/통계");
         assertThat(f.jdbc.sql("SELECT path FROM pages WHERE path LIKE 'archive/통계/%'").query(String.class).list())
@@ -66,12 +67,12 @@ class PageTreeServiceTest {
         f.page("a/b", "");
         long c = f.page("c", "");
         long d = f.page("d", "");
-        assertThatThrownBy(() -> f.tree.move(a, "a/b", null, null, null, 1, "web"))
+        assertThatThrownBy(() -> f.tree.move(a, "a/b", null, null, null, Actor.web(1)))
                 .isInstanceOf(WikiException.class).extracting("code").isEqualTo("CYCLE");
-        assertThatThrownBy(() -> f.tree.move(c, "", "d", null, null, 1, "web"))
+        assertThatThrownBy(() -> f.tree.move(c, "", "d", null, null, Actor.web(1)))
                 .extracting("code").isEqualTo("PATH_EXISTS");
 
-        f.tree.move(d, null, null, null, 0, 1, "web");
+        f.tree.move(d, null, null, null, 0, Actor.web(1));
         assertThat(f.jdbc.sql("SELECT path FROM pages WHERE parent_id IS NULL ORDER BY sort_order").query(String.class).list())
                 .containsExactly("d", "a", "c");
         assertThat(f.jdbc.sql("SELECT version FROM pages WHERE id = ?").param(d).query(Integer.class).single()).isEqualTo(1);
@@ -81,7 +82,7 @@ class PageTreeServiceTest {
     void trashRestorePurge() {
         long parent = f.page("p", "부모");
         long child = f.page("p/c", "자식");
-        f.writes.replaceContent(child, "![](/p/" + child + "/files/x.png)", null, 1, "web");
+        f.writes.replaceContent(child, "![](/p/" + child + "/files/x.png)", null, Actor.web(1));
         f.jdbc.sql("INSERT INTO attachments (page_id, filename, mime, size, sha256, created_at) VALUES (?, 'x.png', 'image/png', 1, 's', 't')")
                 .param(child).update();
         f.storage.write(child, 1, "x".getBytes());

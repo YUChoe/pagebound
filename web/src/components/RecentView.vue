@@ -23,7 +23,7 @@ onMounted(async () => {
             <div v-if="r.summary" class="muted">{{ r.summary }}</div></td>
           <td>v{{ r.version }}</td>
           <td>{{ r.author ?? '-' }}</td>
-          <td><span class="badge" :class="'src-' + r.source">{{ SOURCE[r.source] ?? r.source }}</span></td>
+          <td><span class="badge" :class="'src-' + r.source">{{ SOURCE[r.source] ?? r.source }}{{ r.tokenName ? ' · ' + r.tokenName : '' }}</span></td>
           <td :class="r.deltaBytes >= 0 ? 'plus' : 'minus'">{{ r.deltaBytes >= 0 ? '+' : '' }}{{ r.deltaBytes }}</td>
           <td class="muted">{{ formatDate(r.createdAt) }}</td>
         </tr>

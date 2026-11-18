@@ -8,9 +8,10 @@
 |------|------|
 | 프로토콜 | MCP Streamable HTTP, 엔드포인트 `/mcp` (MCP Java SDK `HttpServletStreamableServerTransportProvider`, Spring AI 미사용) |
 | 인증 | `Authorization: Bearer <token>`. 사용자 설정 화면에서 발급, 발급 시 1회만 표시 |
-| 권한 | 토큰 scope `read` / `write`. 실제 권한 = min(scope, 사용자 role). `read` 토큰에는 쓰기 도구 목록 자체를 노출하지 않음 (`contextExtractor`로 토큰 scope 추출 → `addToolFilter`) |
+| 권한 | 토큰 scope `read` / `write`. 실제 권한 = min(scope, 사용자 role), 단 토큰의 최대 권한은 EDITOR (관리자 API·토큰 관리 불가). `read` 토큰에는 쓰기 도구 목록 자체를 노출하지 않음 (`contextExtractor`로 토큰 scope 추출 → `addToolFilter`) |
 | 감사 | 모든 쓰기는 `page_revisions.source='mcp'`, `token_id` 기록. 역사 화면에 "에이전트" 배지 |
-| 제한 | 토큰당 분당 60회, 첨부 업로드 1건 10MB (base64 전송 고려) |
+| 제한 | 토큰당 분당 60회 (REST·MCP 합산. REST 초과 시 HTTP 429, MCP는 도구 오류 `RATE_LIMITED`), 첨부 업로드 1건 10MB (base64 전송 고려) |
+| 외부 주소 | 영구 링크·첨부 절대 URL은 `pagebound.site.base-url`, 비어 있으면 요청 Host. 관리 화면 설정([F12](F12-admin.md) 10절)으로 이전 예정 |
 | 공유 로직 | MCP 도구, REST API, 웹 UI가 동일 서비스 계층 사용 |
 | 접근 범위 | 사내망 한정 (Q2 확정) |
 
@@ -26,6 +27,8 @@ claude mcp add --transport http pagebound http://<host>/mcp --header "Authorizat
 - 사용자 설정 화면: 발급(이름, scope, 만료일 선택: 30일/90일/무기한), 목록(마지막 사용 시각), 폐기
 - 관리자: 전체 토큰 목록, 강제 폐기, 호출 로그 ([F12](F12-admin.md) 9절)
 - 사용자 비활성화 시 해당 사용자 토큰 전부 무효
+- API: `GET/POST /api/v1/me/tokens`, `DELETE /api/v1/me/tokens/{id}` (웹 세션 전용, Bearer 불가), 관리자 `GET /api/v1/admin/tokens`, `DELETE /api/v1/admin/tokens/{id}`
+- 웹 화면: `/settings/tokens` (발급 직후 토큰 원문과 `claude mcp add` 명령 표시)
 
 ## 3. MCP 도구
 
@@ -52,7 +55,7 @@ claude mcp add --transport http pagebound http://<host>/mcp --header "Authorizat
 | `update_page` | `path`, `base_version`, 다음 중 하나: `content`(전체) / `section` + `content` / `edits[{old,new}]`(정확 일치 치환), `summary?`, `dry_run?` | version 불일치 시 오류 + 현재 version. `dry_run`은 diff만 반환 |
 | `set_tags` | `path`, `add[]?`, `remove[]?` | |
 | `move_page` | `path`, `new_parent_path?`, `new_slug?` | [F3](F3-tree-links.md) 4절 링크 갱신 포함 (Q5 확정: 허용) |
-| `upload_attachment` | `path`, `filename`, `content_base64` 또는 `source_url` | 첨부 URL 반환 (본문 삽입은 `update_page`로) |
+| `upload_attachment` | `path`, `filename`, `content_base64` 또는 `source_url` | 첨부 URL·markdown 반환 (본문 삽입은 `update_page`로). `source_url`은 M6의 SSRF 방어 구현 후 제공 |
 | `trash_page` | `path` | 휴지통 이동만 (Q5 확정: 허용) |
 
 MCP 미제공: 영구 삭제, 복원, 사용자/토큰 관리, 태그 병합.

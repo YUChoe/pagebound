@@ -40,7 +40,7 @@ public class PageReadService {
     }
 
     public record RecentChange(String path, String title, int version, String action, String source,
-                               String summary, String author, String createdAt, int deltaBytes) {
+                               String summary, String author, String createdAt, int deltaBytes, String tokenName) {
     }
 
     public record AttachmentFile(long pageId, long attachmentId, String filename, String mime, long size,
@@ -125,15 +125,24 @@ public class PageReadService {
 
     /** 최근 변경 (리비전 기준). deltaBytes = 직전 버전 대비 UTF-8 바이트 증감. */
     public List<RecentChange> recent(int limit) {
+        return recent(null, limit);
+    }
+
+    /** since(ISO-8601)가 있으면 그 이후 변경만. */
+    public List<RecentChange> recent(String since, int limit) {
         return jdbc.sql("""
                 SELECT p.path, r.title, r.version, r.action, r.source, r.summary, u.name, r.created_at,
                        length(CAST(r.content AS BLOB)) - coalesce((SELECT length(CAST(o.content AS BLOB))
-                           FROM page_revisions o WHERE o.page_id = r.page_id AND o.version = r.version - 1), 0)
+                           FROM page_revisions o WHERE o.page_id = r.page_id AND o.version = r.version - 1), 0),
+                       t.name
                 FROM page_revisions r JOIN pages p ON p.id = r.page_id LEFT JOIN users u ON u.id = r.author_id
-                WHERE p.%s ORDER BY r.created_at DESC, r.id DESC LIMIT ?""".formatted(ACTIVE))
-                .param(limit)
+                LEFT JOIN api_tokens t ON t.id = r.token_id
+                WHERE p.%s AND (? IS NULL OR r.created_at >= ?)
+                ORDER BY r.created_at DESC, r.id DESC LIMIT ?""".formatted(ACTIVE))
+                .params(since, since, limit)
                 .query((rs, n) -> new RecentChange(rs.getString(1), rs.getString(2), rs.getInt(3), rs.getString(4),
-                        rs.getString(5), rs.getString(6), rs.getString(7), rs.getString(8), rs.getInt(9)))
+                        rs.getString(5), rs.getString(6), rs.getString(7), rs.getString(8), rs.getInt(9),
+                        rs.getString(10)))
                 .list();
     }
 

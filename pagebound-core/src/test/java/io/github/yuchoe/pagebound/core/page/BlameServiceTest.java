@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import io.github.yuchoe.pagebound.core.Actor;
 import io.github.yuchoe.pagebound.core.CoreFixture;
 import io.github.yuchoe.pagebound.core.page.BlameService.Hunk;
 
@@ -35,9 +36,9 @@ class BlameServiceTest {
 
     @Test
     void attributesEachLineToLastChangingRevisionAndAuthor() {
-        long id = f.writes.create("doc", null, "a\nb\nc", null, null, false, 1, "web").id();
-        f.writes.update(id, 1, null, "a\nB\nc\nd", null, null, null, null, false, 2, "web");
-        f.writes.update(id, 2, null, "x\na\nB\nc\nd", null, null, null, null, false, 1, "mcp");
+        long id = f.writes.create("doc", null, "a\nb\nc", null, null, false, Actor.web(1)).id();
+        f.writes.update(id, 1, null, "a\nB\nc\nd", null, null, null, null, false, Actor.web(2));
+        f.writes.update(id, 2, null, "x\na\nB\nc\nd", null, null, null, null, false, new Actor(1, "mcp", null));
 
         var result = blame.blame(id);
         assertThat(result.version()).isEqualTo(3);
@@ -49,10 +50,10 @@ class BlameServiceTest {
 
     @Test
     void incrementalUpdateEqualsFullRecompute() {
-        long id = f.writes.create("doc", null, "1\n2\n3\n4\n5", null, null, false, 1, "web").id();
-        f.writes.update(id, 1, null, "1\n2\n삼\n4\n5", null, null, null, null, false, 2, "web");
+        long id = f.writes.create("doc", null, "1\n2\n3\n4\n5", null, null, false, Actor.web(1)).id();
+        f.writes.update(id, 1, null, "1\n2\n삼\n4\n5", null, null, null, null, false, Actor.web(2));
         blame.blame(id); // v2 캐시
-        f.writes.update(id, 2, null, "0\n1\n2\n삼\n5\n6", null, null, null, null, false, 1, "web");
+        f.writes.update(id, 2, null, "0\n1\n2\n삼\n5\n6", null, null, null, null, false, Actor.web(1));
 
         List<Hunk> incremental = blame.blame(id).hunks();
         assertThat(f.jdbc.sql("SELECT version FROM page_blame WHERE page_id = ?").param(id).query(Integer.class).single())

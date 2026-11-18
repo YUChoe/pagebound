@@ -5,8 +5,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -14,25 +17,36 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
+import io.github.yuchoe.pagebound.core.token.ApiTokenService;
 import io.github.yuchoe.pagebound.core.user.UserStore;
+import io.github.yuchoe.pagebound.server.security.BearerTokenFilter;
+import io.github.yuchoe.pagebound.server.security.TokenAuthentication;
+import io.github.yuchoe.pagebound.server.security.TokenRateLimiter;
 
 /**
  * 웹 보안 (spec/features/F7-common.md 3~4절).
  * SPA용 폼 로그인(성공 204 / 실패 401), 쿠키 CSRF, 익명 읽기 설정(pagebound.anonymous-read).
+ * Bearer 토큰(spec/features/F6-mcp-api.md): /mcp는 토큰 전용, 토큰 관리 API는 세션 전용, Bearer 요청은 CSRF 제외.
  */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http, UserStore users,
+    SecurityFilterChain securityFilterChain(HttpSecurity http, UserStore users, ApiTokenService tokens,
+                                            TokenRateLimiter rateLimiter,
                                             @Value("${pagebound.anonymous-read:true}") boolean anonymousRead)
             throws Exception {
         RequestMatcher rawMarkdown = request -> request.getRequestURI().endsWith(".md");
         http.authorizeHttpRequests(auth -> {
+            auth.requestMatchers("/mcp", "/mcp/**")
+                    .access((a, ctx) -> new AuthorizationDecision(a.get() instanceof TokenAuthentication));
+            auth.requestMatchers("/api/v1/me/tokens", "/api/v1/me/tokens/**")
+                    .access((a, ctx) -> new AuthorizationDecision(isSession(a.get())));
             auth.requestMatchers("/api/v1/me", "/login", "/logout").permitAll();
             // 관리 기능은 ADMIN (태그 이름 변경·병합·삭제 포함)
             auth.requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
@@ -56,7 +70,9 @@ public class SecurityConfig {
             }
             auth.anyRequest().authenticated();
         });
-        http.csrf(csrf -> csrf.spa());
+        http.csrf(csrf -> csrf.spa()
+                .ignoringRequestMatchers(BearerTokenFilter::hasBearer, BearerTokenFilter::isMcp));
+        http.addFilterBefore(new BearerTokenFilter(tokens, rateLimiter), UsernamePasswordAuthenticationFilter.class);
         http.formLogin(form -> form
                 .loginPage("/login")
                 .loginProcessingUrl("/login")
@@ -72,6 +88,11 @@ public class SecurityConfig {
                 .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler()));
         http.exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
         return http.build();
+    }
+
+    private static boolean isSession(Authentication a) {
+        return a != null && a.isAuthenticated() && !(a instanceof TokenAuthentication)
+                && !(a instanceof AnonymousAuthenticationToken);
     }
 
     /** 로그인 ID = 이메일, 비밀번호 = Wiki.js에서 이전한 bcrypt($2a$) 해시. */

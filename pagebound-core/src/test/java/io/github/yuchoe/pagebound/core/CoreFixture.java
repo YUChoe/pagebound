@@ -50,7 +50,7 @@ public final class CoreFixture implements AutoCloseable {
     }
 
     public long page(String path, String content, String... tagNames) {
-        return writes.create(path, null, content, List.of(tagNames), null, true, 1, "web").id();
+        return writes.create(path, null, content, List.of(tagNames), null, true, Actor.web(1)).id();
     }
 
     public String content(long id) {

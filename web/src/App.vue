@@ -33,6 +33,7 @@ async function logout() {
     <span class="spacer" />
     <span v-if="session.authenticated" class="user">
       {{ session.name }}
+      <router-link to="/settings/tokens">API 토큰</router-link>
       <button type="button" class="link-btn" @click="logout">로그아웃</button>
     </span>
     <router-link v-else-if="session.loaded" :to="{ name: 'login', query: { next: route.fullPath } }">로그인</router-link>
