@@ -1,6 +1,6 @@
 <script setup>
 // API 토큰 관리 /settings/tokens (spec/features/F6-mcp-api.md 2절). 발급 직후에만 원문을 보여 준다.
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { api } from '../api.js'
 import { session } from '../session.js'
 import { formatDate } from '../time.js'
@@ -44,10 +44,9 @@ function state(t) {
   return '사용 가능'
 }
 
-onMounted(() => {
-  document.title = 'API 토큰 - Pagebound'
-  if (session.authenticated) load()
-})
+onMounted(() => { document.title = 'API 토큰 - Pagebound' })
+// 새로고침 직후에는 세션 확인(/me)이 끝난 뒤 목록을 불러온다
+watch(() => session.authenticated, (yes) => { if (yes) load() }, { immediate: true })
 </script>
 
 <template>
