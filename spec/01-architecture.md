@@ -57,7 +57,7 @@
 | 에디터 | CodeMirror 6 + 실시간 미리보기 |
 | 렌더러 (클라이언트) | markdown-it + footnote + task-lists, 위키 링크 커스텀 플러그인, DOMPurify, highlight.js, mermaid |
 | HTML→MD | turndown |
-| 검색 | SQLite FTS5 `trigram` 토크나이저 |
+| 검색 | SQLite FTS5 `trigram` 토크나이저, 2자 이하는 LIKE ([F11](features/F11-search.md)) |
 | 외부 HTTP | Spring `RestClient` (GitLab API, OpenGraph 수집) |
 | HTML 파싱 (OG) | jsoup (`<head>`만) |
 

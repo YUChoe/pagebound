@@ -16,8 +16,9 @@
 | attachments | 페이지 종속 첨부 | F2 |
 | tags, page_tags | 분류 | F4 |
 | api_tokens | MCP/REST 토큰 | F6 |
-| pages_fts | 전문 검색 | F7 |
+| pages_fts | 전문 검색 (P1에서 `search_index`로 대체, F11 8절) | F11 |
 | link_previews | 외부 링크 미리보기 캐시 | F10 |
+| audit_log, settings, mcp_call_log | 관리 작업 감사, 런타임 설정, MCP 호출 로그 (추가 예정, DDL은 F12 13절) | F12 |
 
 ## 2. DDL
 

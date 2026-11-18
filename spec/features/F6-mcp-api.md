@@ -24,7 +24,7 @@ claude mcp add --transport http pagebound http://<host>/mcp --header "Authorizat
 
 - 토큰 형식: `pb_` + 32바이트 랜덤 base62. DB에는 SHA-256만 저장
 - 사용자 설정 화면: 발급(이름, scope, 만료일 선택: 30일/90일/무기한), 목록(마지막 사용 시각), 폐기
-- 관리자: 전체 토큰 목록, 강제 폐기
+- 관리자: 전체 토큰 목록, 강제 폐기, 호출 로그 ([F12](F12-admin.md) 9절)
 - 사용자 비활성화 시 해당 사용자 토큰 전부 무효
 
 ## 3. MCP 도구
@@ -33,7 +33,7 @@ claude mcp add --transport http pagebound http://<host>/mcp --header "Authorizat
 
 | 도구 | 입력 | 반환 |
 |------|------|------|
-| `search_pages` | `query`, `tags[]?`, `limit?=10` | 경로, 제목, 태그, 스니펫, 수정일 |
+| `search_pages` | `query`([F11](F11-search.md) 4절 문법), `tags[]?`, `path?`, `limit?=10` | 경로, 제목, 태그, 스니펫, 일치 섹션 번호, 수정일 |
 | `get_page` | `path`, `section?` (번호 `2.1` 또는 헤딩 텍스트), `max_chars?=40000` | 마크다운, 제목, 태그, version, 수정일, 첨부 목록. 초과 시 잘린 본문 + 목차 + `truncated=true` |
 | `get_outline` | `path` | 번호 매긴 헤딩 트리 + 섹션별 문자 수 |
 | `list_children` | `path?`(없으면 루트), `depth?=1` | 하위 문서 경로·제목·하위 수 |

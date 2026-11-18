@@ -21,10 +21,12 @@ spec/
 │   ├── F4-tags.md         태그(분류)
 │   ├── F5-page-view.md    문서 화면 (namu.wiki 구성)
 │   ├── F6-mcp-api.md      MCP 서버, API 토큰, REST API
-│   ├── F7-common.md       검색, 역사, 권한, 사용자
+│   ├── F7-common.md       역사, 권한, 사용자
 │   ├── F8-migration.md    Wiki.js 마이그레이션
 │   ├── F9-code-blocks.md  코드 보기, 코드 접기(상태 유지)
-│   └── F10-link-preview.md GitLab 이슈/MR 등 웹 링크 미리보기
+│   ├── F10-link-preview.md GitLab 이슈/MR 등 웹 링크 미리보기
+│   ├── F11-search.md      검색 (질의 문법, 자동완성, 결과·패싯)
+│   └── F12-admin.md       관리자 (사용자, 휴지통, 토큰, 감사 로그, 설정, 유지보수)
 └── phases/
     ├── M1-foundation.md   골격, 스키마, 마이그레이터
     ├── M2-read.md         읽기 화면
@@ -49,6 +51,8 @@ spec/
 | R7 | 서버 언어 선정 | Java 21 + Spring Boot ([01-architecture.md](01-architecture.md) D5) |
 | R8 | 개발자용 코드 보기/접기 | 코드블록 접기 상태가 새로고침 후 유지, 문서 기본 접힘 지정 가능 |
 | R9 | 웹 링크 미리보기 | 사내 GitLab 이슈/MR 링크에 제목·상태 표시, 단독 줄 URL은 카드 |
+| R10 | 검색 | 제목 자동완성·바로가기, 구문/제외/태그/경로 필터, 코드 안 문자열 검색, 한국어 2자 검색, 하이라이트 스니펫 |
+| R11 | 관리자 기능 | 사용자·휴지통·태그·토큰 관리, 감사 로그, 마지막 관리자 보호, 런타임 설정·유지보수 |
 
 ## 추적표 (요구사항 → 기능 → 단계)
 
@@ -63,7 +67,9 @@ spec/
 | R7 | [01-architecture.md](01-architecture.md) | M1 |
 | R8 | [F9](features/F9-code-blocks.md), [F8](features/F8-migration.md) | M1 (`<details>` 이전), M2 (P0), M7 (P1) |
 | R9 | [F10](features/F10-link-preview.md) | M6 |
-| 공통 | [F7](features/F7-common.md) | M2 (로그인, 권한), M4 (검색), M7 (역사, 관리자) |
+| R10 | [F11](features/F11-search.md) | M4 (P0), M7 (P1) |
+| R11 | [F12](features/F12-admin.md) | M4 (`deleted_by`, 휴지통·태그 API), M5 (토큰 API), M7 (관리자 화면 P0·P1) |
+| 공통 | [F7](features/F7-common.md) | M2 (로그인, 권한), M7 (역사) |
 
 ## 단계 요약
 
@@ -73,10 +79,10 @@ spec/
 | M1 | [골격, 스키마, 마이그레이터](phases/M1-foundation.md) | M0 | 2일 |
 | M2 | [읽기 화면](phases/M2-read.md) | M1 | 3일 |
 | M3 | [에디터, 첨부](phases/M3-write.md) | M2 | 3일 |
-| M4 | [트리 편집, 태그, 검색](phases/M4-organize.md) | M3 | 3일 |
+| M4 | [트리 편집, 태그, 검색](phases/M4-organize.md) | M3 | 4일 (검색 확장으로 +1일) |
 | M5 | [MCP, 토큰, REST](phases/M5-mcp.md) | M3 | 2일 |
 | M6 | [웹 링크 미리보기](phases/M6-link-preview.md) | M2 | 3일 |
-| M7 | [역사, P1, 관리자](phases/M7-history-p1.md) | M4 | 2일 |
+| M7 | [역사, P1, 관리자](phases/M7-history-p1.md) | M4 | 4일 (관리자 기능 확장으로 +2일) |
 | M8 | [리허설, 전환](phases/M8-cutover.md) | M5, M6, M7 | 1일 |
 
 ## 결정 사항 (M0)
@@ -101,3 +107,5 @@ spec/
 - 랜덤 문서 버튼, 즐겨찾기(☆) — [F5](features/F5-page-view.md)
 - 코드 접기 상태 기기 간 동기화(서버 저장) — [F9](features/F9-code-blocks.md)
 - GitLab `#note_n` 댓글 내용 미리보기, 본문 내 `group/project!13` 단축 참조 자동 링크 — [F10](features/F10-link-preview.md)
+- 검색: 최근 검색어, `author:` 필터, 첨부 텍스트 내용 검색 — [F11](features/F11-search.md)
+- 관리자: 백업 즉시 실행·다운로드, 로그인 이력, 비밀번호 정책 설정 — [F12](features/F12-admin.md)

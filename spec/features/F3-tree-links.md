@@ -66,7 +66,7 @@ slug 규칙: 기본값은 제목. `/ # ? | [ ]` 금지, 앞뒤 공백 제거, �
 
 - 삭제 = `deleted_at` 설정, 하위 문서 포함 여부 확인
 - 30일 경과 시 스케줄러가 영구 삭제 (첨부 파일 포함)
-- 관리자 복원: 원 경로 점유 시 새 slug 입력 요구
+- 관리자 복원·즉시 영구 삭제: [F12](F12-admin.md) 6절 (원 경로 점유 시 새 slug 입력). 삭제자는 `pages.deleted_by`에 기록
 
 ## 7. API
 
@@ -77,7 +77,7 @@ slug 규칙: 기본값은 제목. `/ # ? | [ ]` 금지, 앞뒤 공백 제거, �
 | GET | `/api/v1/pages/{id}/backlinks` | 역링크 |
 | POST | `/api/v1/pages/{id}/move` | `newParentId?`, `newSlug?`, `sortOrder?` |
 | DELETE | `/api/v1/pages/{id}` | 휴지통 이동 |
-| GET/POST | `/api/v1/trash`, `/api/v1/trash/{id}/restore` | 관리자 |
+| GET/POST/DELETE | `/api/v1/admin/trash`, `…/{id}/restore`, `…/{id}` | 관리자 ([F12](F12-admin.md) 14절) |
 
 ## 8. 완료 기준
 

@@ -1,6 +1,6 @@
 # F4. 태그 (R4, 화면 명칭: 분류)
 
-관련: [F5 분류 바](F5-page-view.md), [F7 검색](F7-common.md), 단계 [M2](../phases/M2-read.md), [M4](../phases/M4-organize.md)
+관련: [F5 분류 바](F5-page-view.md), [F11 검색](F11-search.md), 단계 [M2](../phases/M2-read.md), [M4](../phases/M4-organize.md)
 
 ## 1. 규칙
 
@@ -16,8 +16,8 @@
 | 문서 | 제목 아래 namu식 분류 바 `분류: a \| b \| c`, 클릭 시 태그 목록 |
 | `/tags` | 전체 태그 + 사용 수, 이름/사용수 정렬 |
 | `/tags/{a}+{b}` | 다중 태그 AND 필터 목록 (제목, 경로, 수정일) |
-| 검색 | 검색어 + 태그 필터 |
-| 관리자 | 이름 변경, 병합(A→B), 미사용 삭제 |
+| 검색 | 검색어 + `tag:` 필터, 결과 패싯 ([F11](F11-search.md) 4·5절) |
+| 관리자 | 이름 변경, 병합(A→B), 미사용 삭제 (화면: [F12](F12-admin.md) 8절) |
 
 ## 3. API
 
