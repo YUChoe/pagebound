@@ -358,3 +358,6 @@ tr.muted td { color: #9ca3af; }
 .floating-buttons button { width: 36px; height: 36px; border-radius: 50%; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); background: #fff; }
 .fn-tooltip { position: absolute; z-index: 50; max-width: 420px; background: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); font-size: 14px; }
 .fn-tooltip p { margin: 0; }
+
+mark.hl { background: #fff3a3; padding: 0 1px; border-radius: 2px; }
+.section-link { display: inline-block; margin-top: 2px; }

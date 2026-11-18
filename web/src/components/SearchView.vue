@@ -5,6 +5,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { api } from '../api.js'
 import { encodePath } from '../markdown/wikiPaths.js'
 import { highlight, highlightTerms, queryTerms } from '../search/highlight.js'
+import { headingId } from '../markdown/plugins.js'
 import { canEdit } from '../session.js'
 import { formatDate } from '../time.js'
 
@@ -50,6 +51,12 @@ function toggleTag(name) {
 }
 
 watch(() => route.fullPath, () => { if (route.name === 'search') load() }, { immediate: true })
+
+// 결과 → 문서 (?hl=검색어로 본문 강조, 섹션 바로가기는 해당 헤딩으로)
+function pageLink(item, section) {
+  const query = terms.value.length ? { hl: terms.value.join(' ') } : {}
+  return { path: '/w/' + encodePath(item.path), query, hash: section ? '#' + headingId(section.title) : '' }
+}
 </script>
 
 <template>
@@ -96,7 +103,8 @@ watch(() => route.fullPath, () => { if (route.name === 'search') load() }, { imm
         <ol v-else class="result-list">
           <li v-for="item in result.items" :key="item.path" class="result">
             <div class="result-head">
-              <router-link class="result-title" :to="'/w/' + encodePath(item.path)"><span v-html="highlightTerms(item.title, terms)" /></router-link>
+              <router-link class="result-title" :to="pageLink(item)"><span v-html="highlightTerms(item.title, terms)" /></router-link>
+              <span v-if="item.files?.length" class="badge" :title="item.files.join(', ')">첨부 {{ item.files.length }}</span>
               <span class="muted">{{ formatDate(item.updatedAt) }}<template v-if="item.updatedBy"> · {{ item.updatedBy }}</template></span>
             </div>
             <div class="muted result-path">
@@ -104,7 +112,7 @@ watch(() => route.fullPath, () => { if (route.name === 'search') load() }, { imm
               <template v-if="item.tags.length"> · 분류: {{ item.tags.join(', ') }}</template>
             </div>
             <p v-for="(s, i) in item.snippets" :key="i" class="snippet" :class="{ code: s.inCode }" v-html="highlight(s.text)" />
-            <div v-if="item.section" class="muted">↳ {{ item.section.number }} {{ item.section.title }}</div>
+            <router-link v-if="item.section" class="muted section-link" :to="pageLink(item, item.section)">↳ {{ item.section.number }} {{ item.section.title }}</router-link>
           </li>
         </ol>
         <nav v-if="pages > 1" class="pager">

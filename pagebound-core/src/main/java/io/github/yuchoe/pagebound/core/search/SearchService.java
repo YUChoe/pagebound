@@ -32,8 +32,9 @@ public class SearchService {
     public record SectionRef(int index, String number, String title) {
     }
 
+    /** files: 검색어가 들어간 첨부 파일명 ("첨부" 배지). */
     public record Hit(String path, String title, List<Crumb> breadcrumbs, List<String> tags, String updatedAt,
-                      String updatedBy, List<Snippet> snippets, SectionRef section) {
+                      String updatedBy, List<Snippet> snippets, SectionRef section, List<String> files) {
     }
 
     public record Facet(String name, int count) {
@@ -50,14 +51,17 @@ public class SearchService {
     }
 
     private final JdbcClient jdbc;
+    private final SearchIndexer indexer;
     private final MarkdownAnalyzer analyzer = new MarkdownAnalyzer();
 
     public SearchService(JdbcClient jdbc) {
         this.jdbc = jdbc;
+        this.indexer = new SearchIndexer(jdbc);
     }
 
     /** extraTags·extraPath는 결과 화면 필터(URL 파라미터)로, 질의 안의 tag:·path:와 합쳐진다. */
     public Result search(String q, List<String> extraTags, String extraPath, String sort, int page, int size) {
+        indexer.flush();
         SearchQuery query = SearchQuery.parse(q);
         List<String> tags = new ArrayList<>(query.tags());
         if (extraTags != null) {
@@ -81,14 +85,13 @@ public class SearchService {
         }
         int from = Math.min((pageNo - 1) * pageSize, rows.size());
         List<Hit> items = rows.subList(from, Math.min(from + pageSize, rows.size())).stream()
-                .map(r -> hit(r, query.needles())).toList();
+                .map(r -> hit(r, query.needles(), query.scope())).toList();
         return new Result(rows.size(), pageNo, pageSize, items, tagFacets(rows), pathFacets(rows));
     }
 
     /** 검색 색인 재구축 (spec/features/F11-search.md 8절). 색인 대상 문서 수 반환. */
     public int rebuildIndex() {
-        jdbc.sql("INSERT INTO pages_fts(pages_fts) VALUES('rebuild')").update();
-        return jdbc.sql("SELECT count(*) FROM pages").query(Integer.class).single();
+        return indexer.rebuildAll();
     }
 
     /** 제목·경로 부분 일치 자동완성. 정확히 일치하면 exact=true로 맨 앞. */
@@ -123,23 +126,23 @@ public class SearchService {
         // 순위용 bm25는 FTS 질의 1회로 따로 구한다. LEFT JOIN 서브쿼리로 붙이면 SQLite가 행마다 MATCH를 다시 실행한다
         Map<Long, Double> ranks = new HashMap<>();
         if (!ftsNeedles.isEmpty()) {
-            jdbc.sql("SELECT rowid, bm25(pages_fts, 10.0, 1.0) FROM pages_fts WHERE pages_fts MATCH ?")
-                    .param(String.join(" OR ", ftsNeedles.stream().map(SearchService::ftsPhrase).toList()))
+            // 열 가중치: title, path, body, code, files
+            jdbc.sql("SELECT rowid, bm25(search_index, 10.0, 5.0, 1.0, 1.0, 2.0) FROM search_index WHERE search_index MATCH ?")
+                    .param(scoped(String.join(" OR ", ftsNeedles.stream().map(SearchService::ftsPhrase).toList()), query.scope()))
                     .query((rs, n) -> ranks.put(rs.getLong(1), rs.getDouble(2))).list();
         }
         sql.append("WHERE p.deleted_at IS NULL AND p.is_draft = 0");
         for (String needle : query.needles()) {
             if (ftsEligible(needle)) {
-                // FTS 색인은 제목·본문만 담으므로 경로 일치는 LIKE로 보완
-                sql.append(" AND (p.id IN (SELECT rowid FROM pages_fts WHERE pages_fts MATCH ?) OR p.path LIKE ? ESCAPE '\\')");
-                params.add(ftsPhrase(needle));
-                params.add(like(needle));
+                sql.append(" AND p.id IN (SELECT rowid FROM search_index WHERE search_index MATCH ?)");
+                params.add(scoped(ftsPhrase(needle), query.scope()));
             } else {
-                sql.append(" AND (p.title LIKE ? ESCAPE '\\' OR p.content LIKE ? ESCAPE '\\' OR p.path LIKE ? ESCAPE '\\')");
-                String like = like(needle);
-                params.add(like);
-                params.add(like);
-                params.add(like);
+                // trigram은 3자 미만을 못 찾으므로 색인 열 LIKE (범위 지정 반영)
+                List<String> columns = columns(query.scope());
+                sql.append(" AND p.id IN (SELECT rowid FROM search_index WHERE ")
+                        .append(String.join(" OR ", columns.stream().map(c -> c + " LIKE ? ESCAPE '\\'").toList()))
+                        .append(')');
+                columns.forEach(c -> params.add(like(needle)));
             }
         }
         for (String exclude : query.excludes()) {
@@ -165,6 +168,19 @@ public class SearchService {
                 .list());
     }
 
+    /** 범위 지정(in:)을 FTS5 열 필터로. */
+    static String scoped(String expression, String scope) {
+        return scope == null ? expression : column(scope) + " : (" + expression + ")";
+    }
+
+    private static String column(String scope) {
+        return "file".equals(scope) ? "files" : scope;
+    }
+
+    private static List<String> columns(String scope) {
+        return scope == null ? List.of("title", "path", "body", "code", "files") : List.of(column(scope));
+    }
+
     /** 0 제목 완전 일치, 1 제목 접두 일치, 2 제목·경로 부분 일치, 3 본문만. */
     private static int tier(Row r, String text, List<String> needles) {
         String title = r.title().toLowerCase(Locale.ROOT);
@@ -184,7 +200,7 @@ public class SearchService {
         return 3;
     }
 
-    private Hit hit(Row r, List<String> needles) {
+    private Hit hit(Row r, List<String> needles, String scope) {
         record Detail(String content, String updatedBy) {
         }
         Detail d = jdbc.sql("SELECT p.content, u.name FROM pages p LEFT JOIN users u ON u.id = p.updated_by WHERE p.id = ?")
@@ -197,9 +213,13 @@ public class SearchService {
         String content = d.content();
         String lower = content.toLowerCase(Locale.ROOT);
         List<String> lowerNeedles = needles.stream().map(n -> n.toLowerCase(Locale.ROOT)).toList();
+        List<MarkdownAnalyzer.Range> code = analyzer.codeRanges(content);
         int first = nextMatch(lower, lowerNeedles, 0)[0];
+        // in:code면 코드 안의 첫 일치를 스니펫으로
+        while ("code".equals(scope) && first >= 0 && !MarkdownAnalyzer.inAny(code, first)) {
+            first = nextMatch(lower, lowerNeedles, first + 1)[0];
+        }
         if (first >= 0) {
-            List<MarkdownAnalyzer.Range> code = analyzer.codeRanges(content);
             int windowEnd = addSnippet(snippets, content, lower, lowerNeedles, first, code);
             int second = nextMatch(lower, lowerNeedles, windowEnd)[0];
             if (second >= 0) {
@@ -214,7 +234,11 @@ public class SearchService {
             String head = collapse(content.substring(0, Math.min(content.length(), WINDOW * 2)));
             snippets.add(new Snippet(head + (content.length() > WINDOW * 2 ? " …" : ""), false));
         }
-        return new Hit(r.path(), r.title(), breadcrumbs(r.path()), tags, r.updatedAt(), d.updatedBy(), snippets, section);
+        List<String> files = jdbc.sql("SELECT filename FROM attachments WHERE page_id = ? ORDER BY filename").param(r.id())
+                .query(String.class).list().stream()
+                .filter(name -> lowerNeedles.stream().anyMatch(n -> name.toLowerCase(Locale.ROOT).contains(n))).toList();
+        return new Hit(r.path(), r.title(), breadcrumbs(r.path()), tags, r.updatedAt(), d.updatedBy(), snippets, section,
+                files);
     }
 
     /** pos 주변 창을 스니펫으로 추가하고 창 끝 오프셋을 반환. */

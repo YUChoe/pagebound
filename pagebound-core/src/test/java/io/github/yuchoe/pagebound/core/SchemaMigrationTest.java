@@ -37,10 +37,10 @@ class SchemaMigrationTest {
     void createsAllTables() throws SQLException {
         List<String> tables = queryStrings(
                 "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' "
-                        + "AND name NOT LIKE 'pages_fts_%' AND name <> 'flyway_schema_history' ORDER BY name");
+                        + "AND name NOT LIKE 'search_index_%' AND name <> 'flyway_schema_history' ORDER BY name");
         assertThat(tables).containsExactly(
                 "api_tokens", "attachments", "audit_log", "link_previews", "mcp_call_log", "page_aliases", "page_blame", "page_links",
-                "page_revisions", "page_tags", "pages", "pages_fts", "settings", "tags", "users");
+                "page_revisions", "page_tags", "pages", "search_index", "search_queue", "settings", "tags", "users");
     }
 
     @Test
@@ -50,17 +50,17 @@ class SchemaMigrationTest {
     }
 
     @Test
-    void ftsTriggersSyncKoreanTrigram() throws SQLException {
+    void triggersQueueChangedPagesAndTrigramMatchesKorean() throws SQLException {
         exec("INSERT INTO pages (id, slug, path, title, content, created_at, updated_at) "
                 + "VALUES (1, '통계', 'nems/통계', '통계', '파티션 테이블 설명', '2026-11-18', '2026-11-18')");
-        assertThat(queryStrings("SELECT rowid FROM pages_fts WHERE pages_fts MATCH '파티션'")).containsExactly("1");
-
+        assertThat(queryStrings("SELECT page_id FROM search_queue")).containsExactly("1");
+        exec("DELETE FROM search_queue");
         exec("UPDATE pages SET content = '알티베이스 설정' WHERE id = 1");
-        assertThat(queryStrings("SELECT rowid FROM pages_fts WHERE pages_fts MATCH '파티션'")).isEmpty();
-        assertThat(queryStrings("SELECT rowid FROM pages_fts WHERE pages_fts MATCH '알티베'")).containsExactly("1");
+        assertThat(queryStrings("SELECT page_id FROM search_queue")).containsExactly("1");
 
-        exec("DELETE FROM pages WHERE id = 1");
-        assertThat(queryStrings("SELECT rowid FROM pages_fts WHERE pages_fts MATCH '알티베'")).isEmpty();
+        exec("INSERT INTO search_index (rowid, title, path, body, code, files) VALUES (1, '통계', 'nems/통계', '알티베이스 설정', '', '')");
+        assertThat(queryStrings("SELECT rowid FROM search_index WHERE search_index MATCH '알티베'")).containsExactly("1");
+        assertThat(queryStrings("SELECT rowid FROM search_index WHERE search_index MATCH 'code : \"알티베\"'")).isEmpty();
     }
 
     @Test

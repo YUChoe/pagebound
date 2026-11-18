@@ -47,6 +47,24 @@ class SearchServiceTest {
         assertThat(q.excludes()).containsExactly("apache");
         assertThat(q.tags()).containsExactly("nems", "db");
         assertThat(q.path()).isEqualTo("nems");
+        assertThat(q.scope()).isEqualTo("code");
+    }
+
+    @Test
+    void scopesTitleCodeFileAndAttachmentBadge() {
+        long id = f.page("scope", "max_connections 설명\n```\nmax_connections=1\n```\n");
+        f.jdbc.sql("INSERT INTO attachments (page_id, filename, mime, size, sha256, created_at) "
+                + "VALUES (?, 'report-2026.xlsx', 'x', 1, 's', 't')").param(id).update();
+        assertThat(paths("in:code max_connections")).containsExactlyInAnyOrder("nems/통계", "scope");
+        assertThat(paths("in:code 설명")).isEmpty();
+        assertThat(paths("in:title 라이선스")).containsExactly("nems/Altibase/라이선스");
+        assertThat(paths("in:file report")).containsExactly("scope");
+        var hit = f.search.search("report-2026", null, null, null, 1, 20).items().getFirst();
+        assertThat(hit.files()).containsExactly("report-2026.xlsx");
+        var code = f.search.search("in:code max_connections", null, null, null, 1, 20).items().stream()
+                .filter(h -> h.path().equals("scope")).findFirst().orElseThrow();
+        assertThat(code.snippets().getFirst().inCode()).isTrue();
+        assertThat(f.search.rebuildIndex()).isEqualTo(8);
     }
 
     @Test

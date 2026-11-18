@@ -14,6 +14,7 @@ import { enhanceCodeBlocks } from '../enhance/codeBlocks.js'
 import { enhanceImages, enhanceMermaid } from '../enhance/media.js'
 import { enhanceLinkPreviews } from '../enhance/linkPreview.js'
 import { enhanceFootnotes } from '../enhance/footnotes.js'
+import { highlightInPage } from '../enhance/pageHighlight.js'
 import { load, save } from '../enhance/storage.js'
 import { formatDate } from '../time.js'
 import { canEdit, session, whenSessionLoaded } from '../session.js'
@@ -79,6 +80,7 @@ async function enhance() {
   whenSessionLoaded().then(() => enhanceLinkPreviews(el, { authenticated: session.authenticated }))
   // 성능 측정점 (spec/features/F5-page-view.md 4절): DOM 삽입 + 보강 소요 시간
   performance.measure('pb:enhance', { start: t0 })
+  if (route.query.hl) highlightInPage(el, String(route.query.hl).split(/\s+/))
   if (route.hash) scrollToAnchor(decodeURIComponent(route.hash.substring(1)))
 }
 
