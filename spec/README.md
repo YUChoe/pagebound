@@ -26,7 +26,8 @@ spec/
 │   ├── F9-code-blocks.md  코드 보기, 코드 접기(상태 유지)
 │   ├── F10-link-preview.md GitLab 이슈/MR 등 웹 링크 미리보기
 │   ├── F11-search.md      검색 (질의 문법, 자동완성, 결과·패싯)
-│   └── F12-admin.md       관리자 (사용자, 휴지통, 토큰, 감사 로그, 설정, 유지보수)
+│   ├── F12-admin.md       관리자 (사용자, 휴지통, 토큰, 감사 로그, 설정, 유지보수)
+│   └── F13-blame.md       행별 blame 보기
 └── phases/
     ├── M1-foundation.md   골격, 스키마, 마이그레이터
     ├── M2-read.md         읽기 화면
@@ -53,6 +54,7 @@ spec/
 | R9 | 웹 링크 미리보기 | 사내 GitLab 이슈/MR 링크에 제목·상태 표시, 단독 줄 URL은 카드 |
 | R10 | 검색 | 제목 자동완성·바로가기, 구문/제외/태그/경로 필터, 코드 안 문자열 검색, 한국어 2자 검색, 하이라이트 스니펫 |
 | R11 | 관리자 기능 | 사용자·휴지통·태그·토큰 관리, 감사 로그, 마지막 관리자 보호, 런타임 설정·유지보수 |
+| R12 | 행별 blame 보기 | 원문 각 줄의 마지막 변경 리비전·작성자·시각, 이전(Wiki.js) 이력 포함 |
 
 ## 추적표 (요구사항 → 기능 → 단계)
 
@@ -69,6 +71,7 @@ spec/
 | R9 | [F10](features/F10-link-preview.md) | M6 |
 | R10 | [F11](features/F11-search.md) | M4 (P0), M7 (P1) |
 | R11 | [F12](features/F12-admin.md) | M4 (`deleted_by`, 휴지통·태그 API), M5 (토큰 API), M7 (관리자 화면 P0·P1) |
+| R12 | [F13](features/F13-blame.md) | M7 범위, M4 직후 선행 구현(P0) |
 | 공통 | [F7](features/F7-common.md) | M2 (로그인, 권한), M7 (역사) |
 
 ## 단계 요약

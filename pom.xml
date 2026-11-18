@@ -28,6 +28,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mcp-sdk.version>2.2.0</mcp-sdk.version>
         <flexmark.version>0.64.8</flexmark.version>
+        <java-diff-utils.version>4.18</java-diff-utils.version>
     </properties>
 
     <dependencyManagement>
@@ -48,6 +49,11 @@
                 <groupId>com.vladsch.flexmark</groupId>
                 <artifactId>flexmark</artifactId>
                 <version>${flexmark.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.java-diff-utils</groupId>
+                <artifactId>java-diff-utils</artifactId>
+                <version>${java-diff-utils.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -18,6 +18,7 @@
 | api_tokens | MCP/REST 토큰 | F6 |
 | pages_fts | 전문 검색 (P1에서 `search_index`로 대체, F11 8절) | F11 |
 | link_previews | 외부 링크 미리보기 캐시 | F10 |
+| page_blame | 행별 blame 캐시 (DDL은 F13 5절, Flyway V3) | F13 |
 | audit_log, settings, mcp_call_log | 관리 작업 감사, 런타임 설정, MCP 호출 로그 (추가 예정, DDL은 F12 13절) | F12 |
 
 ## 2. DDL

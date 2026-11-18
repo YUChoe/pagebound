@@ -35,6 +35,7 @@ export const api = {
   tree: (depth = 20) => request('GET', `/api/v1/tree?${q({ depth })}`),
   page: (path) => request('GET', `/api/v1/pages/by-path?${q({ path })}`),
   recent: (limit = 10) => request('GET', `/api/v1/recent?${q({ limit })}`),
+  blame: (id) => request('GET', `/api/v1/pages/${id}/blame`),
   tags: (query = '', limit = 50) => request('GET', `/api/v1/tags?${q({ q: query, limit })}`),
   tagPages: (names) => request('GET', `/api/v1/tags/pages?${q({ names: names.join(',') })}`),
   search: (params) => request('GET', `/api/v1/search?${q(params)}`),

@@ -111,6 +111,18 @@ class PageApiTest {
     }
 
     @Test
+    void blameReturnsHunksAndRevisionInfo() throws Exception {
+        mvc.perform(get("/api/v1/pages/2/blame"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.version").value(2))
+                .andExpect(jsonPath("$.content").value(TestData.STAT_CONTENT))
+                .andExpect(jsonPath("$.hunks[0].start").value(1))
+                .andExpect(jsonPath("$.revisions['2'].source").value("mcp"))
+                .andExpect(jsonPath("$.revisions['2'].author").value("테스터"));
+        mvc.perform(get("/api/v1/pages/999/blame")).andExpect(status().isNotFound());
+    }
+
+    @Test
     void rawMarkdownPermalinkAndSpaShell() throws Exception {
         mvc.perform(get(uri("/w/nems/통계.md")))
                 .andExpect(status().isOk())

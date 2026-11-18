@@ -4,6 +4,7 @@
 - 예상: 4일 (F12 관리자 기능 확장으로 +2일)
 - 범위:
   - [F7](../features/F7-common.md) 2절(역사)
+  - [F13](../features/F13-blame.md) P1 (리비전 보기·diff 연결, 시스템 변경 무시). P0은 M4 직후 선행 구현
   - [F12](../features/F12-admin.md) P0 (대시보드, 사용자, 휴지통, 태그, 토큰, 감사 로그) + P1 (정리 도구, 설정, 유지보수, MCP 호출 로그)
   - [F1](../features/F1-editor.md) 2절 P1 (TSV, HTML, URL 붙여넣기)
   - [F5](../features/F5-page-view.md) P1 (플로팅 버튼, 각주 툴팁, 역링크, 다크 테마, 인쇄)

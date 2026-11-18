@@ -263,3 +263,22 @@ mark { background: #fff1a8; color: inherit; padding: 0 1px; }
   .facets { display: flex; gap: 12px; flex-wrap: wrap; }
 }
 .permalink-btn { white-space: nowrap; }
+
+/* 행별 blame (spec/features/F13-blame.md 3절) */
+.blame-page { max-width: none; }
+.blame-table { font-size: 13px; border: 1px solid var(--border); border-radius: 6px; overflow-x: auto; }
+.blame-row { display: grid; grid-template-columns: 260px 48px minmax(0, 1fr); border-left: 4px solid rgba(11, 110, 79, calc(0.15 + var(--age, 1) * 0.85)); }
+.blame-row.first { border-top: 1px solid var(--border); }
+.blame-row:first-child { border-top: 0; }
+.blame-row:hover { background: #f5faf8; }
+.blame-info { display: flex; gap: 6px; align-items: baseline; padding: 0 8px; white-space: nowrap; overflow: hidden; background: #fafbfc; border-right: 1px solid var(--border); }
+.blame-ver { font-family: var(--mono); color: var(--link); }
+.blame-author { overflow: hidden; text-overflow: ellipsis; }
+.blame-no { text-align: right; padding: 0 8px; color: #9ca3af; font-family: var(--mono); user-select: none; border-right: 1px solid var(--border); }
+.blame-text { padding: 0 10px; white-space: pre; font-family: var(--mono); background: transparent; font-size: 13px; line-height: 1.6; }
+.code-wrap .blame-text { white-space: pre-wrap; word-break: break-all; }
+.badge.src-migration { background: #eef1f4; }
+.badge.src-system { background: #fdf3d6; }
+@media (max-width: 1023px) {
+  .blame-row { grid-template-columns: 140px 40px minmax(0, 1fr); }
+}
