@@ -160,3 +160,53 @@ button:hover { background: #f3f4f6; }
   .layout { display: block; }
   .doc-card { border: 0; max-width: none; }
 }
+
+/* 에디터 (spec/features/F1-editor.md 1절) */
+.btn { display: inline-block; font-size: 13px; border: 1px solid var(--border); border-radius: 6px; padding: 2px 10px; color: var(--text); background: #fff; }
+.btn:hover, button.primary:hover { text-decoration: none; }
+.btn.primary, button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.badge.warn { background: #fdf3d6; color: #8a5a00; margin-left: 6px; }
+.layout.editing { grid-template-columns: minmax(0, 1fr); max-width: none; }
+.layout.editing .tree-pane, .layout.editing .recent-pane { display: none; }
+.editor-page { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; }
+.editor-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.editor-bar .spacer { flex: 1; }
+.title-input { font-size: 22px; font-weight: 700; border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; min-width: 280px; }
+.summary-input { width: 100%; margin: 6px 0; padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; }
+.tag-input { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; font-size: 14px; }
+.tag-input input { border: 1px solid var(--border); border-radius: 6px; padding: 3px 8px; min-width: 180px; }
+.tag-label { color: var(--muted); }
+.chip { background: #e3f1ec; border-radius: 12px; padding: 1px 4px 1px 10px; }
+.chip button { border: 0; background: transparent; padding: 0 4px; }
+.banner { background: #eef4fc; border: 1px solid #c7dbf5; border-radius: 6px; padding: 6px 10px; margin: 6px 0; font-size: 14px; }
+.banner.warn { background: #fdf7e6; border-color: #f0dca0; }
+.banner button { margin-left: 6px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0; }
+.editor-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 240px; gap: 8px; height: calc(100vh - 290px); min-height: 360px; }
+.editor-body.no-preview { grid-template-columns: minmax(0, 1fr) 240px; }
+.md-editor { border: 1px solid var(--border); border-radius: 6px; overflow: hidden; min-height: 0; }
+.md-editor .cm-editor { height: 100%; font-size: 14px; }
+.md-editor .cm-scroller { font-family: var(--mono); }
+.preview-pane { border: 1px solid var(--border); border-radius: 6px; padding: 8px 16px; overflow: auto; min-height: 0; }
+.attach-panel { border: 1px solid var(--border); border-radius: 6px; padding: 8px; overflow: auto; font-size: 13px; min-height: 0; }
+.attach-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.attach-panel ul { list-style: none; margin: 0; padding: 0; }
+.attach-item { border-top: 1px solid var(--border); padding: 6px 0; }
+.attach-item .thumb { max-width: 100%; max-height: 80px; display: block; margin-bottom: 4px; }
+.attach-info a { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.attach-actions { display: flex; gap: 4px; margin-top: 4px; }
+.attach-actions button { font-size: 12px; padding: 0 6px; }
+.modal-backdrop { position: fixed; inset: 0; z-index: 60; background: rgba(0, 0, 0, 0.45); display: flex; align-items: center; justify-content: center; }
+.modal { background: #fff; border-radius: 8px; padding: 16px 20px; width: min(1000px, 94vw); max-height: 90vh; display: flex; flex-direction: column; }
+.modal h2 { font-size: 18px; margin: 0 0 4px; }
+.diff, .diff-split pre { flex: 1; overflow: auto; font-family: var(--mono); font-size: 13px; background: var(--code-bg); padding: 8px; margin: 8px 0; max-height: 60vh; }
+.diff-split { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.d-del { background: #ffebe9; display: block; }
+.d-add { background: #e6ffec; display: block; }
+.d-same { display: block; }
+.modal-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+@media (max-width: 1023px) {
+  .editor-body, .editor-body.no-preview { grid-template-columns: minmax(0, 1fr); height: auto; }
+  .md-editor { height: 60vh; }
+  .preview-pane { max-height: 60vh; }
+}

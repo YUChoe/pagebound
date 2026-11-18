@@ -47,6 +47,30 @@ public class AttachmentStorage {
         }
     }
 
+    public void delete(long pageId, long attachmentId) {
+        try {
+            Files.deleteIfExists(pathOf(pageId, attachmentId));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    /** 문서의 첨부 디렉토리 전체 삭제 (문서 영구 삭제·초안 정리). */
+    public void deletePage(long pageId) {
+        Path dir = root.resolve(Long.toString(pageId));
+        if (!Files.isDirectory(dir)) {
+            return;
+        }
+        try (var files = Files.list(dir)) {
+            for (Path f : files.toList()) {
+                Files.deleteIfExists(f);
+            }
+            Files.deleteIfExists(dir);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
     public static String sha256(byte[] data) {
         try {
             return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(data));

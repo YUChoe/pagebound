@@ -26,7 +26,8 @@ public class PageReadService {
     public record Crumb(String path, String title) {
     }
 
-    public record AttachmentInfo(String filename, String mime, long size, String url) {
+    /** referenced: 본문에 이 첨부 URL이 있는지 (spec/features/F2-attachments.md 3절 "본문 미참조" 배지). */
+    public record AttachmentInfo(String filename, String mime, long size, String url, boolean referenced) {
     }
 
     /** 위키 링크 대상 해석 결과. exists=false면 레드 링크, path는 alias 해석 후 현재 경로. */
@@ -93,7 +94,7 @@ public class PageReadService {
                 .optional();
         return found.map(r -> new PageView(r.id(), r.path(), r.title(), r.content(), r.version(), r.createdAt(),
                 r.updatedAt(), r.updatedBy(), breadcrumbs(r.parentId()), tags(r.id()), links(r.id()),
-                attachments(r.id()), children(r.id())));
+                attachments(r.id(), r.content()), children(r.id())));
     }
 
     /** 이전 경로(alias)가 가리키는 문서의 현재 경로. */
@@ -188,11 +189,13 @@ public class PageReadService {
         return links;
     }
 
-    private List<AttachmentInfo> attachments(long pageId) {
+    private List<AttachmentInfo> attachments(long pageId, String content) {
         return jdbc.sql("SELECT filename, mime, size FROM attachments WHERE page_id = ? ORDER BY filename")
                 .param(pageId)
-                .query((rs, n) -> new AttachmentInfo(rs.getString(1), rs.getString(2), rs.getLong(3),
-                        AttachmentStorage.url(pageId, rs.getString(1))))
+                .query((rs, n) -> {
+                    String url = AttachmentStorage.url(pageId, rs.getString(1));
+                    return new AttachmentInfo(rs.getString(1), rs.getString(2), rs.getLong(3), url, content.contains(url));
+                })
                 .list();
     }
 

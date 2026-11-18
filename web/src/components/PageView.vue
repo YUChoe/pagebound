@@ -11,6 +11,7 @@ import { enhanceCodeBlocks } from '../enhance/codeBlocks.js'
 import { enhanceImages, enhanceMermaid } from '../enhance/media.js'
 import { load, save } from '../enhance/storage.js'
 import { formatDate } from '../time.js'
+import { canEdit } from '../session.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -61,7 +62,7 @@ async function enhance() {
   if (!el || !page.value) return
   const t0 = performance.now()
   el.innerHTML = rendered.value.html
-  enhanceSections(el)
+  enhanceSections(el, { editBase: canEdit() ? '/edit/' + encodePath(page.value.path) : null })
   code = enhanceCodeBlocks(el, page.value.id)
   codeCount.value = code.count
   mermaidObserver = enhanceMermaid(el)
@@ -76,7 +77,13 @@ function onBodyClick(e) {
   const a = e.target.closest('a')
   if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey) return
   const href = a.getAttribute('href') ?? ''
-  if (href.startsWith('/w/') || href.startsWith('#')) {
+  // 편집 권한자가 레드 링크를 누르면 새 문서 작성
+  if (a.classList.contains('red') && canEdit()) {
+    e.preventDefault()
+    router.push('/edit/' + encodePath(a.dataset.path))
+    return
+  }
+  if (href.startsWith('/w/') || href.startsWith('/edit/') || href.startsWith('#')) {
     e.preventDefault()
     if (href.startsWith('#')) document.getElementById(decodeURIComponent(href.substring(1)))?.scrollIntoView()
     else router.push(href)
@@ -102,7 +109,8 @@ onBeforeUnmount(cleanup)
   <div v-if="status === 'loading'" class="muted pad">불러오는 중…</div>
   <div v-else-if="status === 'missing'" class="doc-card">
     <h1 class="doc-title">{{ routePath(route) }}</h1>
-    <p>문서가 없습니다. (새 문서 작성은 M3에서 지원)</p>
+    <p>문서가 없습니다.</p>
+    <router-link v-if="canEdit()" class="btn" :to="'/edit/' + encodePath(routePath(route))">문서 만들기</router-link>
   </div>
   <div v-else-if="status === 'login'" class="doc-card">
     <p>로그인이 필요합니다. <router-link :to="{ name: 'login', query: { next: route.fullPath } }">로그인</router-link></p>
@@ -113,6 +121,7 @@ onBeforeUnmount(cleanup)
       <div class="doc-title-row">
         <h1 class="doc-title">{{ page.title }}</h1>
         <div class="doc-actions">
+          <router-link v-if="canEdit()" class="btn primary" :to="'/edit/' + encodePath(page.path)">편집</router-link>
           <button v-if="codeCount" type="button" @click="code?.setAll(true)">코드 모두 접기</button>
           <button v-if="codeCount" type="button" @click="code?.setAll(false)">코드 모두 펼치기</button>
           <button type="button" @click="toggleNumbers">{{ showNumbers ? '번호 숨기기' : '번호 보이기' }}</button>
@@ -154,6 +163,7 @@ onBeforeUnmount(cleanup)
         <li v-for="a in page.attachments" :key="a.filename">
           <a :href="a.url" target="_blank" rel="noopener">{{ a.filename }}</a>
           <span class="muted">{{ (a.size / 1024).toFixed(1) }} KB</span>
+          <span v-if="!a.referenced" class="badge warn">본문 미참조</span>
         </li>
       </ul>
     </section>

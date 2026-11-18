@@ -34,7 +34,7 @@ async function logout() {
     </span>
     <router-link v-else-if="session.loaded" :to="{ name: 'login', query: { next: route.fullPath } }">로그인</router-link>
   </header>
-  <div class="layout" :class="{ 'tree-open': treeOpen }">
+  <div class="layout" :class="{ 'tree-open': treeOpen, editing: route.name === 'edit' }">
     <aside class="tree-pane">
       <TreeSidebar />
     </aside>

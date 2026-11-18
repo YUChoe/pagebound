@@ -27,12 +27,30 @@ async function request(method, url, body, headers = {}) {
 }
 
 const q = (params) => new URLSearchParams(params).toString()
+const JSON_HEADERS = { 'Content-Type': 'application/json' }
+const json = (method, url, body) => request(method, url, JSON.stringify(body), JSON_HEADERS)
 
 export const api = {
   me: () => request('GET', '/api/v1/me'),
   tree: (depth = 20) => request('GET', `/api/v1/tree?${q({ depth })}`),
   page: (path) => request('GET', `/api/v1/pages/by-path?${q({ path })}`),
   recent: (limit = 10) => request('GET', `/api/v1/recent?${q({ limit })}`),
+  tags: (query = '') => request('GET', `/api/v1/tags?${q({ q: query })}`),
+  source: (id, section) => request('GET', `/api/v1/pages/${id}/source${section ? `?${q({ section })}` : ''}`),
+  createPage: (body) => json('POST', '/api/v1/pages', body),
+  createDraft: () => request('POST', '/api/v1/pages/drafts'),
+  updatePage: (id, body) => json('PUT', `/api/v1/pages/${id}`, body),
+  attachments: (pageId) => request('GET', `/api/v1/pages/${pageId}/attachments`),
+  upload: (pageId, file, name) => {
+    const form = new FormData()
+    form.append('file', file, name)
+    return request('POST', `/api/v1/pages/${pageId}/attachments`, form)
+  },
+  renameAttachment: (pageId, id, filename) =>
+    json('PATCH', `/api/v1/pages/${pageId}/attachments/${id}`, { filename, rewriteContent: true }),
+  deleteAttachment: (pageId, id) => request('DELETE', `/api/v1/pages/${pageId}/attachments/${id}`),
+  copyAttachment: (pageId, sourcePageId, filename) =>
+    json('POST', `/api/v1/pages/${pageId}/attachments/copy`, { sourcePageId, filename }),
   login: (username, password) => request('POST', '/login', q({ username, password }),
     { 'Content-Type': 'application/x-www-form-urlencoded' }),
   logout: () => request('POST', '/logout'),

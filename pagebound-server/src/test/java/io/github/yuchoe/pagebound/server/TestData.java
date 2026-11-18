@@ -41,6 +41,7 @@ final class TestData {
                 INSERT INTO page_revisions (page_id, version, title, path, content, action, source, author_id, created_at)
                 VALUES (2, 1, '통계', 'nems/통계', 'a', 'created', 'web', 1, '2026-01-01T00:00:00Z'),
                        (2, 2, '통계', 'nems/통계', 'abc', 'updated', 'mcp', 1, '2026-01-02T00:00:00Z')""").update();
+        jdbc.sql("UPDATE pages SET version = 2 WHERE id = 2").update(); // 리비전 v1·v2와 일치
         links.rebuildAll();
     }
 
