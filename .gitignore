@@ -1,0 +1,25 @@
+# Wiki.js export 원본 (사내 데이터, 비밀번호 해시 포함) - 커밋 금지
+database.sqlite
+
+# 마이그레이션 산출물
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# 빌드 산출물
+target/
+node_modules/
+web/dist/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# 비밀값
+.env
+application-local.yml
+
+# 사내 실제 값 (자리표시자 매핑)
+spec/local-values.md
