@@ -3,6 +3,8 @@ pagebound:
   anonymous-read: true
   upload:
     max-file-size: 50MB
+  trash:
+    retention-days: 30
 
 spring:
   application:

@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.github.yuchoe.pagebound.core.page.PageWriteService;
-import io.github.yuchoe.pagebound.core.tag.TagStore;
 
 /**
  * 문서 쓰기 API (spec/features/F1-editor.md 4절). EDITOR/ADMIN만 호출 가능 (SecurityConfig).
@@ -38,12 +37,10 @@ public class PageWriteController {
     }
 
     private final PageWriteService writes;
-    private final TagStore tags;
     private final CurrentUser currentUser;
 
-    public PageWriteController(PageWriteService writes, TagStore tags, CurrentUser currentUser) {
+    public PageWriteController(PageWriteService writes, CurrentUser currentUser) {
         this.writes = writes;
-        this.tags = tags;
         this.currentUser = currentUser;
     }
 
@@ -68,11 +65,5 @@ public class PageWriteController {
     public PageWriteService.Saved update(@PathVariable long id, @RequestBody UpdateRequest r, Authentication auth) {
         return writes.update(id, r.version(), r.title(), r.content(), r.tags(), r.summary(), r.section(), r.path(),
                 Boolean.TRUE.equals(r.createParents()), currentUser.id(auth), SOURCE);
-    }
-
-    @GetMapping("/tags")
-    public List<TagStore.TagCount> tags(@RequestParam(defaultValue = "") String q,
-                                        @RequestParam(defaultValue = "50") int limit) {
-        return tags.list(q, Math.clamp(limit, 1, 500));
     }
 }

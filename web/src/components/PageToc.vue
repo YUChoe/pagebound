@@ -1,11 +1,12 @@
 <script setup>
 import { ref } from 'vue'
+import { revealAnchor } from '../enhance/sections.js'
 
 defineProps({ sections: { type: Array, required: true } })
 const open = ref(true)
 
 function go(id) {
-  document.getElementById(id)?.scrollIntoView()
+  revealAnchor(id)
   history.replaceState(history.state, '', '#' + encodeURIComponent(id))
 }
 </script>

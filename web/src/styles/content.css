@@ -110,3 +110,7 @@
   .codeblock.is-collapsed pre, .codeblock.is-clamped pre { display: flex !important; max-height: none; -webkit-mask-image: none; mask-image: none; }
   .sec.folded > .sec-body { display: block; }
 }
+
+/* 섹션 영구 링크 복사 (spec/features/F5-page-view.md 2.1절) */
+.sec-anchor { visibility: hidden; border: 0; background: transparent; color: var(--muted); font-size: 0.7em; padding: 0 6px; vertical-align: middle; }
+:is(h1, h2, h3, h4, h5, h6):hover > .sec-anchor, .sec-anchor:focus { visibility: visible; }

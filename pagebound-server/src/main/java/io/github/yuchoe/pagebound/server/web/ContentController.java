@@ -1,7 +1,6 @@
 package io.github.yuchoe.pagebound.server.web;
 
 import java.io.IOException;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
 import org.springframework.core.io.FileSystemResource;
@@ -60,11 +59,17 @@ public class ContentController {
     }
 
     @GetMapping("/p/{id:\\d+}")
-    public ResponseEntity<Void> permalink(@PathVariable long id) {
-        return pages.pathById(id)
-                .<ResponseEntity<Void>>map(p -> ResponseEntity.status(HttpStatus.FOUND)
-                        .location(URI.create("/w/" + UriUtils.encodePath(p, StandardCharsets.UTF_8))).build())
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public void permalink(@PathVariable long id, HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
+        // 휴지통·삭제 문서는 404 상태로 SPA의 "문서를 찾을 수 없습니다" 화면 (F5 2.1절 규칙 3)
+        var path = pages.pathById(id);
+        if (path.isPresent()) {
+            response.setStatus(HttpStatus.FOUND.value());
+            response.setHeader(HttpHeaders.LOCATION, "/w/" + UriUtils.encodePath(path.get(), StandardCharsets.UTF_8));
+            return;
+        }
+        response.setStatus(HttpStatus.NOT_FOUND.value());
+        request.getRequestDispatcher("/index.html").forward(request, response);
     }
 
     /** 이미지·PDF inline, 그 외 다운로드. SVG는 CSP sandbox. ETag(sha256) + Range 지원. */

@@ -34,6 +34,11 @@ public class SecurityConfig {
         RequestMatcher rawMarkdown = request -> request.getRequestURI().endsWith(".md");
         http.authorizeHttpRequests(auth -> {
             auth.requestMatchers("/api/v1/me", "/login", "/logout").permitAll();
+            // 관리 기능은 ADMIN (태그 이름 변경·병합·삭제 포함)
+            auth.requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.PATCH, "/api/v1/tags/**").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.DELETE, "/api/v1/tags/**").hasRole("ADMIN")
+                    .requestMatchers(HttpMethod.POST, "/api/v1/tags/**").hasRole("ADMIN");
             // 쓰기와 편집용 원문(초안 포함)은 EDITOR/ADMIN
             String[] writers = {"EDITOR", "ADMIN"};
             auth.requestMatchers(HttpMethod.GET, "/api/v1/pages/*/source").hasAnyRole(writers)

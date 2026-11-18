@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import PageView from './components/PageView.vue'
 import EditorView from './components/EditorView.vue'
 import RecentView from './components/RecentView.vue'
+import SearchView from './components/SearchView.vue'
+import TagsView from './components/TagsView.vue'
 import LoginView from './components/LoginView.vue'
 import NotFound from './components/NotFound.vue'
 
@@ -12,6 +14,8 @@ export const router = createRouter({
     { path: '/w/:path(.*)*', name: 'page', component: PageView },
     { path: '/edit/:path(.*)*', name: 'edit', component: EditorView },
     { path: '/recent', name: 'recent', component: RecentView },
+    { path: '/search', name: 'search', component: SearchView },
+    { path: '/tags/:names(.*)*', name: 'tags', component: TagsView },
     { path: '/login', name: 'login', component: LoginView },
     { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFound },
   ],

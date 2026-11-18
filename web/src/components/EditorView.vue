@@ -15,6 +15,7 @@ import { load, remove, save as store } from '../enhance/storage.js'
 import { MAX_BYTES, MAX_FILES, fileMarkdown, isImage, pasteName, placeholder } from '../editor/paste.js'
 import { canEdit, refreshSession, session } from '../session.js'
 import { formatDate } from '../time.js'
+import { bumpTree } from '../tree/store.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -225,6 +226,7 @@ async function save() {
     remove(draftKey.value)
     loaded.value = content.value
     version.value = saved.version
+    bumpTree()
     if (saved.warnings.length) {
       mode.value = 'edit'
       pageId.value = saved.id

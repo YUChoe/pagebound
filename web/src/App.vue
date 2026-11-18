@@ -3,6 +3,7 @@ import { onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import TreeSidebar from './components/TreeSidebar.vue'
 import RecentSidebar from './components/RecentSidebar.vue'
+import SearchBox from './components/SearchBox.vue'
 import { api } from './api.js'
 import { refreshSession, session } from './session.js'
 
@@ -26,7 +27,9 @@ async function logout() {
     <router-link to="/w/home" class="logo">Pagebound</router-link>
     <nav class="topnav">
       <router-link to="/recent">최근 변경</router-link>
+      <router-link to="/tags">분류</router-link>
     </nav>
+    <SearchBox />
     <span class="spacer" />
     <span v-if="session.authenticated" class="user">
       {{ session.name }}

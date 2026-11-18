@@ -99,7 +99,7 @@
 | 단계 | 구조 | 우선순위 |
 |------|------|---------|
 | 현재 (M1 구현) | `pages_fts(title, content)` external content + 트리거 동기화 | P0 그대로 사용 |
-| 확장 | Flyway `V2`: `search_index(page_id, title, path, body, code, files)` FTS5 trigram, 애플리케이션이 저장 시 갱신 (본문/코드 분리는 flexmark 필요하므로 트리거 불가). `pages_fts`와 트리거 제거 | P1 (`in:code`, `in:file` 도입 시) |
+| 확장 | Flyway 마이그레이션(번호는 구현 순서대로, V2는 M4 휴지통·감사 로그가 사용): `search_index(page_id, title, path, body, code, files)` FTS5 trigram, 애플리케이션이 저장 시 갱신 (본문/코드 분리는 flexmark 필요하므로 트리거 불가). `pages_fts`와 트리거 제거 | P1 (`in:code`, `in:file` 도입 시) |
 
 - 전체 재색인: 마이그레이터 마지막 단계와 관리자 화면 "검색 색인 재구축" 버튼 (P1, [F12](F12-admin.md) 11절)
 
@@ -141,6 +141,8 @@
 | 실데이터, 2자 검색어(LIKE) | API p95 150ms 이내 |
 | 합성 데이터 2,000문서 | API p95 300ms 이내 |
 | 자동완성 | API p95 50ms 이내 |
+
+M4 실측: 실데이터 195문서 검색 p95 76ms, 합성 2,000문서 p95 71ms(`SearchPerformanceTest`), 자동완성 p95 4~6ms. bm25 순위는 FTS 질의 1회로 따로 구한다(LEFT JOIN 서브쿼리로 붙이면 SQLite가 행마다 MATCH를 재실행해 2,000문서에서 p95 19초).
 
 ## 12. 완료 기준
 

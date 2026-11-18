@@ -33,8 +33,8 @@ claude mcp add --transport http pagebound http://<host>/mcp --header "Authorizat
 
 | 도구 | 입력 | 반환 |
 |------|------|------|
-| `search_pages` | `query`([F11](F11-search.md) 4절 문법), `tags[]?`, `path?`, `limit?=10` | 경로, 제목, 태그, 스니펫, 일치 섹션 번호, 수정일 |
-| `get_page` | `path`, `section?` (번호 `2.1` 또는 헤딩 텍스트), `max_chars?=40000` | 마크다운, 제목, 태그, version, 수정일, 첨부 목록. 초과 시 잘린 본문 + 목차 + `truncated=true` |
+| `search_pages` | `query`([F11](F11-search.md) 4절 문법), `tags[]?`, `path?`, `limit?=10` | 경로, 영구 링크, 제목, 태그, 스니펫, 일치 섹션 번호, 수정일 |
+| `get_page` | `path`, `section?` (번호 `2.1` 또는 헤딩 텍스트), `max_chars?=40000` | 마크다운, 제목, 영구 링크(`{base-url}/p/{id}`), 태그, version, 수정일, 첨부 목록. 초과 시 잘린 본문 + 목차 + `truncated=true` |
 | `get_outline` | `path` | 번호 매긴 헤딩 트리 + 섹션별 문자 수 |
 | `list_children` | `path?`(없으면 루트), `depth?=1` | 하위 문서 경로·제목·하위 수 |
 | `list_tags` | - | 태그, 사용 수 |

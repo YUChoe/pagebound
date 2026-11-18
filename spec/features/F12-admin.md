@@ -101,6 +101,7 @@ DB `settings`에 저장하고 즉시 반영한다. 값이 없으면 `application
 | 키 | 기본값 | 설명 |
 |----|--------|------|
 | `site.name` | Pagebound | 헤더·브라우저 제목 |
+| `site.base-url` | (비어 있음 = 접속 주소) | 영구 링크 복사·MCP가 쓰는 외부 주소 (예: 리버스 프록시 뒤) |
 | `site.home-path` | `home` | `/` 접속 시 이동할 문서 |
 | `security.anonymous-read` | `true` | 익명 읽기 (Q7) |
 | `upload.max-file-size` | 50MB | 서버 multipart 한도(52MB) 이내로만 설정 가능 |

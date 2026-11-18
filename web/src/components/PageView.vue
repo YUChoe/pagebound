@@ -6,10 +6,10 @@ import { api, ApiError } from '../api.js'
 import { routePath } from '../router.js'
 import { renderMarkdown } from '../markdown/render.js'
 import { encodePath } from '../markdown/wikiPaths.js'
-import { enhanceSections } from '../enhance/sections.js'
+import { enhanceSections, revealAnchor } from '../enhance/sections.js'
 import { enhanceCodeBlocks } from '../enhance/codeBlocks.js'
 import { enhanceImages, enhanceMermaid } from '../enhance/media.js'
-import { load, save } from '../enhance/storage.js'
+import { copyText, load, save } from '../enhance/storage.js'
 import { formatDate } from '../time.js'
 import { canEdit } from '../session.js'
 
@@ -22,6 +22,7 @@ const codeCount = ref(0)
 const wide = ref(false)
 const showNumbers = ref(load('pb.hnum', true) !== false)
 const lightbox = ref(null)
+const linkCopied = ref(false)
 let code = null
 let mermaidObserver = null
 
@@ -62,14 +63,17 @@ async function enhance() {
   if (!el || !page.value) return
   const t0 = performance.now()
   el.innerHTML = rendered.value.html
-  enhanceSections(el, { editBase: canEdit() ? '/edit/' + encodePath(page.value.path) : null })
+  enhanceSections(el, {
+    editBase: canEdit() ? '/edit/' + encodePath(page.value.path) : null,
+    permalinkBase: permalink(),
+  })
   code = enhanceCodeBlocks(el, page.value.id)
   codeCount.value = code.count
   mermaidObserver = enhanceMermaid(el)
   enhanceImages(el, (src, alt) => { lightbox.value = { src, alt } })
   // 성능 측정점 (spec/features/F5-page-view.md 4절): DOM 삽입 + 보강 소요 시간
   performance.measure('pb:enhance', { start: t0 })
-  if (route.hash) document.getElementById(decodeURIComponent(route.hash.substring(1)))?.scrollIntoView()
+  if (route.hash) scrollToAnchor(decodeURIComponent(route.hash.substring(1)))
 }
 
 // 본문 내부 링크는 SPA 라우팅
@@ -85,9 +89,36 @@ function onBodyClick(e) {
   }
   if (href.startsWith('/w/') || href.startsWith('/edit/') || href.startsWith('#')) {
     e.preventDefault()
-    if (href.startsWith('#')) document.getElementById(decodeURIComponent(href.substring(1)))?.scrollIntoView()
+    if (href.startsWith('#')) revealAnchor(decodeURIComponent(href.substring(1)))
     else router.push(href)
   }
+}
+
+// 앵커로 진입 시: 위쪽 이미지 로드 등으로 본문이 밀리면 다시 맞춘다 (사용자가 스크롤하면 중단)
+function scrollToAnchor(id) {
+  if (!revealAnchor(id)) return
+  let userScrolled = false
+  const stop = () => { userScrolled = true }
+  const events = ['wheel', 'touchstart', 'keydown', 'mousedown']
+  events.forEach((e) => window.addEventListener(e, stop, { once: true, passive: true }))
+  for (const delay of [300, 1000, 2500]) {
+    setTimeout(() => {
+      const top = document.getElementById(id)?.getBoundingClientRect().top
+      if (!userScrolled && top !== undefined && Math.abs(top - 64) > 40) revealAnchor(id)
+    }, delay)
+  }
+  setTimeout(() => events.forEach((e) => window.removeEventListener(e, stop)), 3000)
+}
+
+// 영구 링크 (spec/features/F5-page-view.md 2.1절): 문서 id 기반이라 이동 후에도 유효
+function permalink() {
+  return `${window.location.origin}/p/${page.value.id}`
+}
+
+async function copyPermalink() {
+  await copyText(permalink())
+  linkCopied.value = true
+  setTimeout(() => { linkCopied.value = false }, 1500)
 }
 
 function toggleWide() {
@@ -127,7 +158,9 @@ onBeforeUnmount(cleanup)
           <button type="button" @click="toggleNumbers">{{ showNumbers ? '번호 숨기기' : '번호 보이기' }}</button>
           <button type="button" @click="toggleWide">{{ wide ? '기본 폭' : '넓게 보기' }}</button>
           <a :href="'/w/' + encodePath(page.path) + '.md'" target="_blank" rel="noopener">원문</a>
-          <a :href="'/p/' + page.id" title="영구 링크">#{{ page.id }}</a>
+          <button type="button" class="permalink-btn" :title="'영구 링크 복사: /p/' + page.id" @click="copyPermalink">
+            {{ linkCopied ? '복사됨' : '🔗 링크 복사' }}
+          </button>
         </div>
       </div>
       <p class="doc-meta muted">
@@ -143,7 +176,8 @@ onBeforeUnmount(cleanup)
       </nav>
       <div v-if="page.tags.length" class="category-bar">
         분류:
-        <span v-for="(t, i) in page.tags" :key="t"><span v-if="i" class="sep">|</span> {{ t }}</span>
+        <span v-for="(t, i) in page.tags" :key="t"><span v-if="i" class="sep">|</span>
+          <router-link :to="'/tags/' + encodeURIComponent(t)">{{ t }}</router-link></span>
       </div>
     </header>
 

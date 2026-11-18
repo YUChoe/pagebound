@@ -119,6 +119,9 @@ class PageApiTest {
         mvc.perform(get("/p/2"))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", "/w/nems/%ED%86%B5%EA%B3%84"));
+        mvc.perform(get("/p/999"))
+                .andExpect(status().isNotFound())
+                .andExpect(forwardedUrl("/index.html"));
         mvc.perform(get(uri("/w/nems/통계")))
                 .andExpect(status().isOk())
                 .andExpect(forwardedUrl("/index.html"));

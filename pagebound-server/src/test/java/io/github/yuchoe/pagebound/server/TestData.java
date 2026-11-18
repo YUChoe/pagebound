@@ -21,7 +21,7 @@ final class TestData {
     static void seed(JdbcClient jdbc, LinkIndexer links, AttachmentStorage storage, PasswordEncoder encoder) {
         // parent_id는 ON DELETE RESTRICT이고 SQLite는 행 단위로 즉시 검사하므로 연결을 먼저 끊는다
         jdbc.sql("UPDATE pages SET parent_id = NULL").update();
-        for (String table : List.of("page_links", "page_tags", "tags", "attachments", "page_aliases",
+        for (String table : List.of("audit_log", "page_links", "page_tags", "tags", "attachments", "page_aliases",
                 "page_revisions", "api_tokens", "link_previews", "pages", "users")) {
             jdbc.sql("DELETE FROM " + table).update();
         }

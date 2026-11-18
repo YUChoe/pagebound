@@ -19,6 +19,7 @@ import org.springframework.util.unit.DataSize;
 import io.github.yuchoe.pagebound.core.WikiException;
 import io.github.yuchoe.pagebound.core.attachment.AttachmentService;
 import io.github.yuchoe.pagebound.core.attachment.AttachmentStorage;
+import io.github.yuchoe.pagebound.core.audit.AuditLog;
 import io.github.yuchoe.pagebound.core.tag.TagStore;
 
 class PageWriteServiceTest {
@@ -42,7 +43,7 @@ class PageWriteServiceTest {
                 + "VALUES (1, 'a@b.c', 'a', 'x', 'EDITOR', 't', 't')").update();
         PageStore pages = new PageStore(jdbc);
         storage = new AttachmentStorage(tempDir);
-        writes = new PageWriteService(jdbc, pages, new LinkIndexer(jdbc, pages), new TagStore(jdbc), storage);
+        writes = new PageWriteService(jdbc, pages, new LinkIndexer(jdbc, pages), new TagStore(jdbc, new AuditLog(jdbc)), storage);
         attachments = new AttachmentService(jdbc, storage, writes, DataSize.ofMegabytes(1));
     }
 
