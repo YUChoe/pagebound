@@ -12,7 +12,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class UserStore {
 
-    public record UserAccount(long id, String email, String name, String passwordHash, String role, boolean active) {
+    public record UserAccount(long id, String email, String name, String passwordHash, String role, boolean active,
+                              boolean mustChangePassword) {
     }
 
     private final JdbcClient jdbc;
@@ -22,10 +23,10 @@ public class UserStore {
     }
 
     public Optional<UserAccount> findByEmail(String email) {
-        return jdbc.sql("SELECT id, email, name, password_hash, role, is_active FROM users WHERE email = ?")
+        return jdbc.sql("SELECT id, email, name, password_hash, role, is_active, must_change_password FROM users WHERE email = ?")
                 .param(email)
                 .query((rs, n) -> new UserAccount(rs.getLong(1), rs.getString(2), rs.getString(3), rs.getString(4),
-                        rs.getString(5), rs.getInt(6) == 1))
+                        rs.getString(5), rs.getInt(6) == 1, rs.getInt(7) == 1))
                 .optional();
     }
 

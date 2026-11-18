@@ -85,6 +85,12 @@ public class SearchService {
         return new Result(rows.size(), pageNo, pageSize, items, tagFacets(rows), pathFacets(rows));
     }
 
+    /** 검색 색인 재구축 (spec/features/F11-search.md 8절). 색인 대상 문서 수 반환. */
+    public int rebuildIndex() {
+        jdbc.sql("INSERT INTO pages_fts(pages_fts) VALUES('rebuild')").update();
+        return jdbc.sql("SELECT count(*) FROM pages").query(Integer.class).single();
+    }
+
     /** 제목·경로 부분 일치 자동완성. 정확히 일치하면 exact=true로 맨 앞. */
     public List<Suggestion> suggest(String q, int limit) {
         String text = q == null ? "" : q.trim();

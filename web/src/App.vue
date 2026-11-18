@@ -24,16 +24,18 @@ async function logout() {
 <template>
   <header class="topbar">
     <button class="tree-toggle" type="button" title="문서 트리" @click="treeOpen = !treeOpen">☰</button>
-    <router-link to="/w/home" class="logo">Pagebound</router-link>
+    <router-link to="/" class="logo">{{ session.siteName || 'Pagebound' }}</router-link>
     <nav class="topnav">
       <router-link to="/recent">최근 변경</router-link>
       <router-link to="/tags">분류</router-link>
+      <router-link v-if="session.role === 'ADMIN'" to="/admin">관리</router-link>
     </nav>
     <SearchBox />
     <span class="spacer" />
     <span v-if="session.authenticated" class="user">
       {{ session.name }}
       <router-link to="/settings/tokens">API 토큰</router-link>
+      <router-link to="/settings/password">비밀번호</router-link>
       <button type="button" class="link-btn" @click="logout">로그아웃</button>
     </span>
     <router-link v-else-if="session.loaded" :to="{ name: 'login', query: { next: route.fullPath } }">로그인</router-link>

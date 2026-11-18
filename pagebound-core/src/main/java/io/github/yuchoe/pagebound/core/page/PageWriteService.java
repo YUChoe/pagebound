@@ -207,6 +207,16 @@ public class PageWriteService {
         return ids.size();
     }
 
+    /** 초안 1건 수동 삭제 (첨부 파일 포함). 초안이 아니면 false. */
+    @Transactional
+    public boolean deleteDraft(long id) {
+        int deleted = jdbc.sql("DELETE FROM pages WHERE id = ? AND is_draft = 1").param(id).update();
+        if (deleted > 0) {
+            storage.deletePage(id);
+        }
+        return deleted > 0;
+    }
+
     /** 다른 문서 첨부 참조, 없는 첨부 참조 경고 (spec/features/F2-attachments.md 4절). */
     public List<String> warnings(long id) {
         String content = load(id).content();

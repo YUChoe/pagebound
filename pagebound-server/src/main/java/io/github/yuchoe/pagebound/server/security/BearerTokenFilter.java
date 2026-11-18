@@ -55,7 +55,7 @@ public class BearerTokenFilter extends OncePerRequestFilter {
         }
         if (!isMcp(request) && !rateLimiter.tryAcquire(principal.get().tokenId())) {
             error(response, HttpStatus.TOO_MANY_REQUESTS, "RATE_LIMITED",
-                    "rate limit exceeded: " + TokenRateLimiter.PER_MINUTE + " requests per minute");
+                    "rate limit exceeded: " + rateLimiter.limit() + " requests per minute");
             return;
         }
         SecurityContext context = SecurityContextHolder.createEmptyContext();

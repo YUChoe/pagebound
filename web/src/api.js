@@ -31,6 +31,9 @@ const JSON_HEADERS = { 'Content-Type': 'application/json' }
 const json = (method, url, body) => request(method, url, JSON.stringify(body), JSON_HEADERS)
 
 export const api = {
+  raw: (method, url) => request(method, url),
+  rawJson: (method, url, body) => json(method, url, body),
+  changePassword: (current, next) => json('POST', '/api/v1/me/password', { current, next }),
   me: () => request('GET', '/api/v1/me'),
   tree: (depth = 20) => request('GET', `/api/v1/tree?${q({ depth })}`),
   page: (path) => request('GET', `/api/v1/pages/by-path?${q({ path })}`),

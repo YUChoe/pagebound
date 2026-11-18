@@ -8,13 +8,13 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import io.github.yuchoe.pagebound.core.WikiException;
+import io.github.yuchoe.pagebound.core.settings.RuntimeSettings;
 import io.github.yuchoe.pagebound.server.security.TokenAuthentication;
 import io.github.yuchoe.pagebound.server.security.TokenRateLimiter;
 import io.modelcontextprotocol.common.McpTransportContext;
@@ -49,7 +49,7 @@ public class McpConfig {
 
     @Bean
     HttpServletStreamableServerTransportProvider mcpTransport(JsonMapper jsonMapper,
-                                                             @Value("${pagebound.site.base-url:}") String baseUrl) {
+                                                             RuntimeSettings settings) {
         return HttpServletStreamableServerTransportProvider.builder()
                 .jsonMapper(new JacksonMcpJsonMapper(jsonMapper))
                 .mcpEndpoint(ENDPOINT)
@@ -58,9 +58,9 @@ public class McpConfig {
                     if (SecurityContextHolder.getContext().getAuthentication() instanceof TokenAuthentication auth) {
                         context.put(AUTH, auth);
                     }
-                    String base = baseUrl.isBlank()
+                    String base = settings.baseUrl().isBlank()
                             ? request.getScheme() + "://" + request.getHeader("Host")
-                            : baseUrl.replaceAll("/+$", "");
+                            : settings.baseUrl();
                     context.put(BASE_URL, base);
                     return McpTransportContext.create(context);
                 })
@@ -75,7 +75,8 @@ public class McpConfig {
 
     @Bean(destroyMethod = "closeGracefully")
     McpSyncServer mcpServer(HttpServletStreamableServerTransportProvider transport, McpReadTools readTools,
-                            McpWriteTools writeTools, TokenRateLimiter rateLimiter, JsonMapper jsonMapper) {
+                            McpWriteTools writeTools, TokenRateLimiter rateLimiter, McpCallLog callLog,
+                            JsonMapper jsonMapper) {
         List<McpTool> tools = Stream.concat(readTools.tools().stream(), writeTools.tools().stream()).toList();
         Map<String, Boolean> writeByName = new HashMap<>();
         tools.forEach(t -> writeByName.put(t.name(), t.write()));
@@ -83,14 +84,14 @@ public class McpConfig {
                 .serverInfo("pagebound", "0.1.0")
                 .instructions(INSTRUCTIONS)
                 .capabilities(McpSchema.ServerCapabilities.builder().tools(true).build())
-                .tools(tools.stream().map(t -> spec(t, rateLimiter, jsonMapper)).toList())
+                .tools(tools.stream().map(t -> spec(t, rateLimiter, callLog, jsonMapper)).toList())
                 .addToolFilter((context, tool) -> !writeByName.getOrDefault(tool.name(), true)
                         || context.get(AUTH) instanceof TokenAuthentication auth && auth.canWrite())
                 .build();
     }
 
     private static McpServerFeatures.SyncToolSpecification spec(McpTool tool, TokenRateLimiter rateLimiter,
-                                                                JsonMapper jsonMapper) {
+                                                                McpCallLog callLog, JsonMapper jsonMapper) {
         McpSchema.Tool schema = McpSchema.Tool.builder(tool.name(), tool.inputSchema())
                 .description(tool.description())
                 .annotations(McpSchema.ToolAnnotations.builder().readOnlyHint(!tool.write()).build())
@@ -98,12 +99,12 @@ public class McpConfig {
         return McpServerFeatures.SyncToolSpecification.builder()
                 .tool(schema)
                 .callHandler((exchange, request) -> call(tool, exchange.transportContext(), request.arguments(),
-                        rateLimiter, jsonMapper))
+                        rateLimiter, callLog, jsonMapper))
                 .build();
     }
 
     static McpSchema.CallToolResult call(McpTool tool, McpTransportContext context, Map<String, Object> arguments,
-                                         TokenRateLimiter rateLimiter, JsonMapper jsonMapper) {
+                                         TokenRateLimiter rateLimiter, McpCallLog callLog, JsonMapper jsonMapper) {
         long started = System.nanoTime();
         String code = "OK";
         TokenAuthentication auth = context.get(AUTH) instanceof TokenAuthentication a ? a : null;
@@ -116,7 +117,7 @@ public class McpConfig {
             }
             if (!rateLimiter.tryAcquire(auth.token().tokenId())) {
                 throw new WikiException(429, "RATE_LIMITED",
-                        "rate limit exceeded: " + TokenRateLimiter.PER_MINUTE + " calls per minute");
+                        "rate limit exceeded: " + rateLimiter.limit() + " calls per minute");
             }
             Object result = tool.handler().handle(new McpTool.Args(arguments),
                     new McpTool.Caller(auth, (String) context.get(BASE_URL)));
@@ -136,6 +137,9 @@ public class McpConfig {
             log.info("tool={} token={} user={} code={} ms={}", tool.name(),
                     auth == null ? null : auth.token().tokenId(), auth == null ? null : auth.getName(), code,
                     (System.nanoTime() - started) / 1_000_000);
+            Object target = arguments == null ? null : arguments.getOrDefault("path", arguments.get("query"));
+            callLog.record(auth == null ? null : auth.token().tokenId(), tool.name(),
+                    target == null ? null : target.toString(), code);
         }
     }
 

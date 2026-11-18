@@ -65,6 +65,31 @@ public class GitLabProvider {
         }));
     }
 
+    /** 관리자 설정 화면용 연결 상태 (토큰 값은 노출하지 않음). */
+    public List<Map<String, Object>> status() {
+        List<Map<String, Object>> out = new ArrayList<>();
+        for (LinkPreviewProperties.GitLab host : properties.gitlab()) {
+            Map<String, Object> s = new LinkedHashMap<>();
+            s.put("name", host.name());
+            s.put("baseUrl", host.base());
+            s.put("hasToken", host.hasToken());
+            if (host.hasToken()) {
+                try {
+                    Raw r = get(host, "/version");
+                    s.put("status", r.status());
+                    s.put("version", r.body() == null ? null : r.body().path("version").asString(""));
+                } catch (IOException e) {
+                    s.put("status", "error: " + e.getClass().getSimpleName());
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    s.put("status", "interrupted");
+                }
+            }
+            out.add(s);
+        }
+        return out;
+    }
+
     public Fetched fetch(GitLabUrl url) {
         String project = "/projects/" + encode(url.project());
         try {

@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -18,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import io.github.yuchoe.pagebound.core.markdown.MarkdownAnalyzer;
 import io.github.yuchoe.pagebound.core.page.PageReadService;
 import io.github.yuchoe.pagebound.core.page.WikiPaths;
+import io.github.yuchoe.pagebound.core.settings.RuntimeSettings;
 import io.github.yuchoe.pagebound.core.user.UserStore;
 
 /**
@@ -29,13 +29,13 @@ public class PageApiController {
 
     private final PageReadService pages;
     private final UserStore users;
-    private final boolean anonymousRead;
+    private final RuntimeSettings settings;
 
     public PageApiController(PageReadService pages, UserStore users,
-                             @Value("${pagebound.anonymous-read:true}") boolean anonymousRead) {
+                             RuntimeSettings settings) {
         this.pages = pages;
         this.users = users;
-        this.anonymousRead = anonymousRead;
+        this.settings = settings;
     }
 
     @GetMapping("/tree")
@@ -73,7 +73,9 @@ public class PageApiController {
     public Map<String, Object> me(Authentication authentication, CsrfToken csrf) {
         csrf.getToken();
         Map<String, Object> body = new HashMap<>();
-        body.put("anonymousRead", anonymousRead);
+        body.put("anonymousRead", settings.anonymousRead());
+        body.put("siteName", settings.siteName());
+        body.put("homePath", settings.homePath());
         boolean authenticated = authentication != null && authentication.isAuthenticated()
                 && !(authentication instanceof AnonymousAuthenticationToken);
         body.put("authenticated", authenticated);
@@ -82,6 +84,7 @@ public class PageApiController {
                 body.put("name", u.name());
                 body.put("email", u.email());
                 body.put("role", u.role());
+                body.put("mustChangePassword", u.mustChangePassword());
             });
         }
         return body;

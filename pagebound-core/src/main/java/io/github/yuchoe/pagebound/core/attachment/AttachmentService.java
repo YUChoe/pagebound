@@ -7,14 +7,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.unit.DataSize;
 
 import io.github.yuchoe.pagebound.core.Actor;
 import io.github.yuchoe.pagebound.core.WikiException;
+import io.github.yuchoe.pagebound.core.settings.RuntimeSettings;
 import io.github.yuchoe.pagebound.core.page.PageWriteService;
 
 /**
@@ -33,20 +32,21 @@ public class AttachmentService {
     private final JdbcClient jdbc;
     private final AttachmentStorage storage;
     private final PageWriteService pageWrites;
-    private final long maxFileSize;
+    private final RuntimeSettings settings;
 
     public AttachmentService(JdbcClient jdbc, AttachmentStorage storage, PageWriteService pageWrites,
-                             @Value("${pagebound.upload.max-file-size:50MB}") DataSize maxFileSize) {
+                             RuntimeSettings settings) {
         this.jdbc = jdbc;
         this.storage = storage;
         this.pageWrites = pageWrites;
-        this.maxFileSize = maxFileSize.toBytes();
+        this.settings = settings;
     }
 
     /** 업로드. 같은 문서에 같은 이름이 있으면 name-1.ext, name-2.ext … */
     @Transactional
     public Info upload(long pageId, String originalName, String mime, byte[] data, long actorId) {
         requirePage(pageId);
+        long maxFileSize = settings.maxFileSizeBytes();
         if (data.length > maxFileSize) {
             throw new WikiException(413, "TOO_LARGE", "file exceeds " + maxFileSize + " bytes",
                     Map.of("maxBytes", maxFileSize));

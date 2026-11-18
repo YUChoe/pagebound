@@ -328,3 +328,17 @@ a.lp-loading { background: linear-gradient(90deg, #f1f3f5 25%, #e5e7eb 50%, #f1f
 .diff-insert .diff-new, .diff-change .diff-new { background: #e6ffec; }
 .diff-gap td { background: #f6f8fa; text-align: center; font-family: inherit; }
 .history-source { white-space: pre-wrap; font-family: var(--mono); font-size: 13px; background: #f6f8fa; padding: 8px; border-radius: 6px; }
+
+/* 관리자 (F12) */
+.admin-nav { display: flex; flex-wrap: wrap; gap: 4px 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px; }
+.admin-nav a.router-link-exact-active, .admin-nav a.router-link-active:not(.exact) { font-weight: 700; }
+.admin-tabs button { margin-right: 4px; }
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; margin: 12px 0; }
+.stat { border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; display: flex; flex-direction: column; }
+.stat b { font-size: 22px; }
+.stat small { color: #6b7280; }
+.settings-form { display: flex; flex-direction: column; gap: 8px; max-width: 640px; }
+.settings-form label { display: flex; flex-direction: column; gap: 2px; }
+.settings-form button { align-self: flex-start; }
+.audit-mini { font-size: 13px; }
+tr.muted td { color: #9ca3af; }

@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.AfterEach;
@@ -14,13 +15,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
-import org.springframework.util.unit.DataSize;
 
 import io.github.yuchoe.pagebound.core.Actor;
 import io.github.yuchoe.pagebound.core.WikiException;
 import io.github.yuchoe.pagebound.core.attachment.AttachmentService;
 import io.github.yuchoe.pagebound.core.attachment.AttachmentStorage;
 import io.github.yuchoe.pagebound.core.audit.AuditLog;
+import io.github.yuchoe.pagebound.core.settings.RuntimeSettings;
 import io.github.yuchoe.pagebound.core.tag.TagStore;
 
 class PageWriteServiceTest {
@@ -45,7 +46,9 @@ class PageWriteServiceTest {
         PageStore pages = new PageStore(jdbc);
         storage = new AttachmentStorage(tempDir);
         writes = new PageWriteService(jdbc, pages, new LinkIndexer(jdbc, pages), new TagStore(jdbc, new AuditLog(jdbc)), storage);
-        attachments = new AttachmentService(jdbc, storage, writes, DataSize.ofMegabytes(1));
+        RuntimeSettings settings = RuntimeSettings.defaults(jdbc, new AuditLog(jdbc));
+        settings.update(Map.of("upload.max-file-size", "1MB"), 1);
+        attachments = new AttachmentService(jdbc, storage, writes, settings);
     }
 
     @AfterEach

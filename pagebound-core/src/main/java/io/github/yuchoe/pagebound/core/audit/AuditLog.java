@@ -1,5 +1,6 @@
 package io.github.yuchoe.pagebound.core.audit;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,6 +28,12 @@ public class AuditLog {
                 .params(actorId, action, targetType, targetId == null ? null : targetId.toString(), toJson(detail),
                         Instant.now().toString())
                 .update();
+    }
+
+    /** 보관 기간(일)이 지난 감사 로그 삭제. */
+    public int purgeOlderThan(int days) {
+        return jdbc.sql("DELETE FROM audit_log WHERE created_at < ?")
+                .param(Instant.now().minus(Duration.ofDays(days)).toString()).update();
     }
 
     static String toJson(Map<String, ?> detail) {
