@@ -6,6 +6,13 @@ import { blockPlugin, calloutPlugin, headingPlugin, taskListPlugin, wikiLinkPlug
 export function createMarkdown() {
   const md = new MarkdownIt({ html: true, linkify: true, breaks: true })
   md.use(wikiLinkPlugin).use(headingPlugin).use(calloutPlugin).use(taskListPlugin).use(blockPlugin)
+  // 링크 미리보기용: 자동 링크 종류 표시 (linkify = 문장 속 URL, autolink = <URL>) — spec/features/F10-link-preview.md 2절
+  const linkOpen = md.renderer.rules.link_open ?? ((tokens, idx, options, env, self) => self.renderToken(tokens, idx, options))
+  md.renderer.rules.link_open = (tokens, idx, options, env, self) => {
+    const markup = tokens[idx].markup
+    if (markup === 'linkify' || markup === 'autolink') tokens[idx].attrSet('data-link', markup)
+    return linkOpen(tokens, idx, options, env, self)
+  }
   return md
 }
 

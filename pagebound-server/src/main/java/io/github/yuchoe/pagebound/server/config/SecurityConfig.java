@@ -53,6 +53,8 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.PATCH, "/api/v1/tags/**").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.DELETE, "/api/v1/tags/**").hasRole("ADMIN")
                     .requestMatchers(HttpMethod.POST, "/api/v1/tags/**").hasRole("ADMIN");
+            // 링크 미리보기는 서비스 계정으로 조회한 비공개 정보: 로그인 사용자 전체 (F10 6절)
+            auth.requestMatchers(HttpMethod.POST, "/api/v1/link-previews", "/api/v1/link-previews/**").authenticated();
             // 쓰기와 편집용 원문(초안 포함)은 EDITOR/ADMIN
             String[] writers = {"EDITOR", "ADMIN"};
             auth.requestMatchers(HttpMethod.GET, "/api/v1/pages/*/source").hasAnyRole(writers)

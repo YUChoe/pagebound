@@ -17,6 +17,11 @@
 | 7 | P1: 위키, 파일 스니펫(F9 컴포넌트 재사용), OpenGraph 프로바이더 + SSRF 방어 | SSRF 차단 테스트 |
 | 8 | MCP `upload_attachment`의 `source_url` (7번 SSRF 방어 재사용, 10MB 상한) — [F6](../features/F6-mcp-api.md) 3.2절 | 사설 IP URL 거부 |
 
+## 진행 상황 (2026-11-18)
+
+- 2~8 구현 완료. 가짜 GitLab 서버 통합 테스트, 기존 문서 GitLab URL 196건 전부 분류(미지원 0), 외부 OG·SSRF 차단 확인
+- 1번 대기: 서비스 계정 토큰 발급 후 `GITLAB_*_TOKEN` 설정 → 유형별 실제 URL 조회, 10절 성능 기준(3초/300ms) 실측
+
 ## 완료 기준
 
 1. [F10](../features/F10-link-preview.md) 10절 완료 기준 전부 통과

@@ -5,6 +5,20 @@ pagebound:
     max-file-size: 50MB
   trash:
     retention-days: 30
+  link-preview:
+    # 사내 GitLab: 주소·서비스 계정 토큰(read_api)은 환경변수로만 주입. 비어 있으면 미리보기 없음
+    gitlab:
+      - name: gitlab-a
+        base-url: ${GITLAB_A_URL:}
+        token: ${GITLAB_A_TOKEN:}
+      - name: gitlab-b
+        base-url: ${GITLAB_B_URL:}
+        token: ${GITLAB_B_TOKEN:}
+    opengraph:
+      enabled: true
+      allow-private-hosts: []
+    timeout: 3s
+    per-host-concurrency: 4
   site:
     base-url: ""   # 비우면 접속 주소. 리버스 프록시 뒤라면 외부 주소 (MCP 영구 링크용)
 

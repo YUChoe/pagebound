@@ -1,5 +1,6 @@
 package io.github.yuchoe.pagebound.server.mcp;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.LinkedHashMap;
@@ -20,6 +21,7 @@ import io.github.yuchoe.pagebound.core.tag.TagStore;
 import io.github.yuchoe.pagebound.server.mcp.McpTool.Args;
 import io.github.yuchoe.pagebound.server.mcp.McpTool.Caller;
 import io.github.yuchoe.pagebound.server.mcp.McpTool.Schema;
+import io.github.yuchoe.pagebound.server.preview.SafeFetcher;
 
 /**
  * MCP 쓰기 도구 6개 (spec/features/F6-mcp-api.md 3.2절). scope write + EDITOR 이상만 노출·실행.
@@ -35,14 +37,16 @@ public class McpWriteTools {
     private final PageTreeService tree;
     private final AttachmentService attachments;
     private final TagStore tags;
+    private final SafeFetcher fetcher;
 
     public McpWriteTools(McpReadTools read, PageWriteService writes, PageTreeService tree,
-                         AttachmentService attachments, TagStore tags) {
+                         AttachmentService attachments, TagStore tags, SafeFetcher fetcher) {
         this.read = read;
         this.writes = writes;
         this.tree = tree;
         this.attachments = attachments;
         this.tags = tags;
+        this.fetcher = fetcher;
     }
 
     public List<McpTool> tools() {
@@ -75,10 +79,11 @@ public class McpWriteTools {
                                 .str("new_parent_path", "새 상위 경로 (\"\"=최상위, 생략=유지)", false)
                                 .str("new_slug", "새 이름 (생략=유지)", false).build(), true, this::movePage),
                 new McpTool("upload_attachment", """
-                        문서에 첨부 업로드 (최대 10MB). 반환 markdown을 update_page로 본문에 넣는다. \
-                        같은 이름이 있으면 서버가 접미사를 붙인다.""",
+                        문서에 첨부 업로드 (최대 10MB). content_base64 또는 source_url(공개 http/https, 사설 IP 불가) 중 하나. \
+                        반환 markdown을 update_page로 본문에 넣는다. 같은 이름이 있으면 서버가 접미사를 붙인다.""",
                         Schema.object().str("path", "문서 경로", true).str("filename", "파일명", true)
-                                .str("content_base64", "파일 내용 (base64)", true).build(), true, this::uploadAttachment),
+                                .str("content_base64", "파일 내용 (base64)", false)
+                                .str("source_url", "가져올 파일 URL", false).build(), true, this::uploadAttachment),
                 new McpTool("trash_page", "문서를 휴지통으로 이동 (하위 문서가 있으면 거부). 복원은 웹 관리자만.",
                         Schema.object().str("path", "문서 경로", true).build(), true, this::trashPage));
     }
@@ -184,17 +189,30 @@ public class McpWriteTools {
 
     private Object uploadAttachment(Args a, Caller c) {
         long id = read.requireId(McpReadTools.path(a));
+        if (a.has("content_base64") == a.has("source_url")) {
+            throw WikiException.badRequest("provide exactly one of content_base64 or source_url");
+        }
         byte[] data;
-        try {
-            data = Base64.getMimeDecoder().decode(a.str("content_base64"));
-        } catch (IllegalArgumentException e) {
-            throw WikiException.badRequest("content_base64 is not valid base64");
+        String mime = null;
+        if (a.has("source_url")) {
+            var response = fetcher.get(a.str("source_url"), MAX_UPLOAD_BYTES, false, Duration.ofSeconds(30));
+            if (response.status() != 200) {
+                throw new WikiException(502, "FETCH_FAILED", "source_url returned HTTP " + response.status());
+            }
+            data = response.body();
+            mime = response.contentType().replaceAll(";.*$", "").strip();
+        } else {
+            try {
+                data = Base64.getMimeDecoder().decode(a.str("content_base64"));
+            } catch (IllegalArgumentException e) {
+                throw WikiException.badRequest("content_base64 is not valid base64");
+            }
         }
         if (data.length > MAX_UPLOAD_BYTES) {
             throw new WikiException(413, "TOO_LARGE", "file exceeds " + MAX_UPLOAD_BYTES + " bytes",
                     Map.of("maxBytes", MAX_UPLOAD_BYTES));
         }
-        var info = attachments.upload(id, a.str("filename"), null, data, c.userId());
+        var info = attachments.upload(id, a.str("filename"), mime, data, c.userId());
         boolean image = info.mime() != null && info.mime().startsWith("image/");
         String markdown = (image ? "![" : "[") + info.filename() + "](" + info.url() + ")";
         Map<String, Object> out = new LinkedHashMap<>();

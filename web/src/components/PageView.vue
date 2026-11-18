@@ -9,9 +9,10 @@ import { encodePath } from '../markdown/wikiPaths.js'
 import { enhanceSections, revealAnchor } from '../enhance/sections.js'
 import { enhanceCodeBlocks } from '../enhance/codeBlocks.js'
 import { enhanceImages, enhanceMermaid } from '../enhance/media.js'
+import { enhanceLinkPreviews } from '../enhance/linkPreview.js'
 import { copyText, load, save } from '../enhance/storage.js'
 import { formatDate } from '../time.js'
-import { canEdit } from '../session.js'
+import { canEdit, session, whenSessionLoaded } from '../session.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -71,6 +72,7 @@ async function enhance() {
   codeCount.value = code.count
   mermaidObserver = enhanceMermaid(el)
   enhanceImages(el, (src, alt) => { lightbox.value = { src, alt } })
+  whenSessionLoaded().then(() => enhanceLinkPreviews(el, { authenticated: session.authenticated }))
   // 성능 측정점 (spec/features/F5-page-view.md 4절): DOM 삽입 + 보강 소요 시간
   performance.measure('pb:enhance', { start: t0 })
   if (route.hash) scrollToAnchor(decodeURIComponent(route.hash.substring(1)))

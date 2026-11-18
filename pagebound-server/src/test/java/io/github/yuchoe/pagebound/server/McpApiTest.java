@@ -201,6 +201,17 @@ class McpApiTest {
     }
 
     @Test
+    void uploadFromPrivateSourceUrlIsBlocked() throws Exception {
+        Session s = new Session(tokens.issue(1, "ssrf", "write", null).token());
+        JsonNode blocked = s.call("upload_attachment", Map.of("path", "home", "filename", "meta.txt",
+                "source_url", "http://169.254.169.254/latest/meta-data/"));
+        assertThat(blocked.get("code").asString()).isEqualTo("BLOCKED_HOST");
+        JsonNode both = s.call("upload_attachment", Map.of("path", "home", "filename", "a.txt",
+                "source_url", "http://127.0.0.1/", "content_base64", "YQ=="));
+        assertThat(both.get("code").asString()).isEqualTo("BAD_REQUEST");
+    }
+
+    @Test
     void sixtyFirstCallIsRateLimited() throws Exception {
         var issued = tokens.issue(1, "한도", "read", null);
         // 테스트마다 DB를 비워 토큰 id가 재사용되므로, 메모리 한도 카운터가 겹치지 않게 고유 id로 바꾼다

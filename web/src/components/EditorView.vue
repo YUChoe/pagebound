@@ -11,6 +11,7 @@ import { routePath } from '../router.js'
 import { encodePath, lastSegment } from '../markdown/wikiPaths.js'
 import { renderMarkdown } from '../markdown/render.js'
 import { enhanceCodeBlocks } from '../enhance/codeBlocks.js'
+import { enhanceLinkPreviews } from '../enhance/linkPreview.js'
 import { load, remove, save as store } from '../enhance/storage.js'
 import { MAX_BYTES, MAX_FILES, fileMarkdown, isImage, pasteName, placeholder } from '../editor/paste.js'
 import { canEdit, refreshSession, session } from '../session.js'
@@ -141,6 +142,7 @@ async function renderPreview() {
   codeControl?.disconnect()
   el.innerHTML = renderMarkdown(content.value, { path: path.value, links: links.value }).html
   codeControl = enhanceCodeBlocks(el, 'preview')
+  enhanceLinkPreviews(el, { authenticated: session.authenticated })
 }
 function syncScroll(ratio) {
   const el = preview.value

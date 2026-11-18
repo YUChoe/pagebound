@@ -287,3 +287,30 @@ mark { background: #fff1a8; color: inherit; padding: 0 1px; }
 @media (max-width: 1023px) {
   .blame-row { grid-template-columns: 140px 40px minmax(0, 1fr); }
 }
+
+/* 링크 미리보기 (F10) */
+a.lp-chip { display: inline-flex; align-items: baseline; gap: 4px; max-width: 100%; padding: 0 6px; border: 1px solid var(--border); border-radius: 10px; background: #f7f8fa; text-decoration: none; vertical-align: baseline; }
+a.lp-chip .lp-title { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 36em; }
+.lp-icon { color: #6b7280; font-size: 0.9em; margin-right: 2px; }
+.lp-label { font-family: var(--mono); font-size: 0.9em; }
+.lp-state { font-size: 11px; border-radius: 8px; padding: 0 6px; margin-left: 4px; color: #fff; background: #6b7280; white-space: nowrap; }
+.lp-state.lp-open { background: #1f883d; }
+.lp-state.lp-draft { background: #8c959f; }
+.lp-state.lp-merged { background: #8250df; }
+.lp-state.lp-closed { background: #cf222e; }
+a.lp-loading { background: linear-gradient(90deg, #f1f3f5 25%, #e5e7eb 50%, #f1f3f5 75%); background-size: 200% 100%; animation: lp-shimmer 1.2s infinite; border-radius: 4px; }
+@keyframes lp-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+.lp-card { border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; background: #fff; max-width: 720px; }
+.lp-card-holder { margin: 8px 0; }
+.lp-head { display: flex; align-items: center; gap: 6px; }
+.lp-head .lp-link { display: flex; gap: 6px; min-width: 0; font-weight: 600; }
+.lp-head .lp-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lp-refresh { margin-left: auto; border: 0; background: transparent; color: #6b7280; padding: 0 4px; }
+.lp-favicon { width: 16px; height: 16px; }
+.lp-meta, .lp-desc { color: #57606a; font-size: 13px; margin-top: 4px; }
+.lp-labels { margin-top: 4px; display: flex; flex-wrap: wrap; gap: 4px; }
+.lp-labels .chip { font-size: 12px; padding: 0 8px; }
+.lp-image { display: block; max-width: 100%; max-height: 160px; margin-top: 6px; border-radius: 4px; }
+.lp-snippet { margin-top: 6px; }
+.lp-popover { position: absolute; z-index: 50; width: min(480px, calc(100vw - 16px)); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); border-radius: 8px; }
+.lp-head .lp-label { white-space: nowrap; flex-shrink: 0; }

@@ -61,6 +61,8 @@ export const api = {
     { 'Content-Type': 'application/x-www-form-urlencoded' }),
   logout: () => request('POST', '/logout'),
   tokens: () => request('GET', '/api/v1/me/tokens'),
+  linkPreviews: (urls) => json('POST', '/api/v1/link-previews', { urls }),
+  refreshLinkPreview: (url) => json('POST', '/api/v1/link-previews/refresh', { url }),
   issueToken: (body) => json('POST', '/api/v1/me/tokens', body),
   revokeToken: (id) => request('DELETE', `/api/v1/me/tokens/${id}`),
 }
