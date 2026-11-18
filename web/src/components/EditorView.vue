@@ -14,6 +14,7 @@ import { enhanceCodeBlocks } from '../enhance/codeBlocks.js'
 import { enhanceLinkPreviews } from '../enhance/linkPreview.js'
 import { load, remove, save as store } from '../enhance/storage.js'
 import { MAX_BYTES, MAX_FILES, fileMarkdown, isImage, pasteName, placeholder } from '../editor/paste.js'
+import { dataUrlToFile, imageName } from '../editor/clipboard.js'
 import { canEdit, refreshSession, session } from '../session.js'
 import { formatDate } from '../time.js'
 import { bumpTree } from '../tree/store.js'
@@ -182,6 +183,26 @@ async function handleFiles(files) {
   }
 }
 
+// HTML 붙여넣기의 이미지(data:, 외부 URL)를 현재 문서 첨부로 저장하고 본문 URL을 바꾼다 (F1 2절 P1)
+async function importImages(sources) {
+  let failed = 0
+  for (const [i, src] of sources.slice(0, MAX_FILES).entries()) {
+    try {
+      const id = await ensurePageId()
+      const name = imageName(src, i)
+      const info = src.startsWith('data:')
+        ? await api.upload(id, dataUrlToFile(src, name), name)
+        : await api.fetchAttachment(id, src, name)
+      let replaced = true
+      while (replaced) replaced = editor.value.replaceFirst(`](${src})`, `](${info.url})`)
+    } catch {
+      failed++
+    }
+  }
+  if (pageId.value) attachments.value = await api.attachments(pageId.value)
+  if (failed) message.value = `이미지 ${failed}개는 가져오지 못해 원래 주소로 남겼습니다`
+}
+
 function insertAttachment(a) {
   editor.value.insert(fileMarkdown(a, a.mime.startsWith('image/')))
 }
@@ -335,7 +356,7 @@ watch(() => [path.value, section.value], loadEditor, { immediate: true })
     </div>
     <div class="editor-body" :class="{ 'no-preview': !showPreview }">
       <MarkdownEditor ref="editor" v-model="content" :page-paths="pagePaths" @save="save" @files="handleFiles"
-                      @scroll="syncScroll" />
+                      @scroll="syncScroll" @images="importImages" />
       <div v-show="showPreview" ref="preview" class="markdown-body preview-pane" />
       <AttachmentPanel :items="attachments" :content="content" :has-page="!!pageId" @upload="handleFiles"
                        @insert="insertAttachment" @rename="renameAttachment" @remove="removeAttachment" />

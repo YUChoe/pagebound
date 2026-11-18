@@ -7,12 +7,13 @@ import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirro
 import { markdown } from '@codemirror/lang-markdown'
 import { defaultHighlightStyle, syntaxHighlighting } from '@codemirror/language'
 import { autocompletion, completionKeymap } from '@codemirror/autocomplete'
+import { htmlToMarkdown, isRichHtml, isTsv, isUrl, tsvToMarkdown } from '../../editor/clipboard.js'
 
 const props = defineProps({
   modelValue: { type: String, default: '' },
   pagePaths: { type: Array, default: () => [] }, // [{ path, title }] — [[ 자동완성
 })
-const emit = defineEmits(['update:modelValue', 'save', 'files', 'scroll'])
+const emit = defineEmits(['update:modelValue', 'save', 'files', 'scroll', 'images'])
 const host = ref(null)
 let view = null
 
@@ -50,6 +51,27 @@ function insertBlock(text) {
   const at = line.text.trim() ? line.to : line.from
   view.dispatch({ changes: { from: at, insert: prefix + text + '\n' }, selection: { anchor: at + prefix.length + text.length } })
   view.focus()
+}
+
+// 붙여넣기 P1: 선택 + URL → 링크, 스프레드시트 셀 → 표, 서식 있는 HTML → 마크다운 (이미지는 images 이벤트로 첨부화)
+function pasteText(event, v) {
+  const text = event.clipboardData?.getData('text/plain') ?? ''
+  const html = event.clipboardData?.getData('text/html') ?? ''
+  const { from, to } = v.state.selection.main
+  let handled = true
+  if (from !== to && isUrl(text)) {
+    wrap('[', `](${text.trim()})`)
+  } else if (isTsv(text) && /<table/i.test(html)) {
+    insert(tsvToMarkdown(text))
+  } else if (isRichHtml(html)) {
+    const converted = htmlToMarkdown(html)
+    insert(converted.markdown)
+    if (converted.images.length) emit('images', converted.images)
+  } else {
+    handled = false
+  }
+  if (handled) event.preventDefault()
+  return handled
 }
 
 // 첫 번째 search를 replacement로 (업로드 플레이스홀더 치환). 찾으면 true
@@ -95,12 +117,14 @@ onMounted(() => {
           if (u.docChanged) emit('update:modelValue', u.state.doc.toString())
         }),
         EditorView.domEventHandlers({
-          paste(event) {
+          paste(event, v) {
             const files = filesFrom(event.clipboardData?.files)
-            if (!files.length) return false
-            event.preventDefault()
-            emit('files', files)
-            return true
+            if (files.length) {
+              event.preventDefault()
+              emit('files', files)
+              return true
+            }
+            return pasteText(event, v)
           },
           drop(event, v) {
             const files = filesFrom(event.dataTransfer?.files)

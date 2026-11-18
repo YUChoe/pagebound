@@ -1,6 +1,7 @@
 package io.github.yuchoe.pagebound.server.web;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -17,7 +18,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import io.github.yuchoe.pagebound.core.WikiException;
 import io.github.yuchoe.pagebound.core.attachment.AttachmentService;
+import io.github.yuchoe.pagebound.core.settings.RuntimeSettings;
+import io.github.yuchoe.pagebound.server.preview.SafeFetcher;
 
 /**
  * 첨부 API (spec/features/F2-attachments.md 5절).
@@ -32,12 +36,34 @@ public class AttachmentController {
     public record CopyRequest(long sourcePageId, String filename) {
     }
 
+    public record FetchRequest(String url, String filename) {
+    }
+
     private final AttachmentService attachments;
     private final CurrentUser currentUser;
+    private final SafeFetcher fetcher;
+    private final RuntimeSettings settings;
 
-    public AttachmentController(AttachmentService attachments, CurrentUser currentUser) {
+    public AttachmentController(AttachmentService attachments, CurrentUser currentUser, SafeFetcher fetcher,
+                                RuntimeSettings settings) {
         this.attachments = attachments;
         this.currentUser = currentUser;
+        this.fetcher = fetcher;
+        this.settings = settings;
+    }
+
+    /** HTML 붙여넣기의 외부 이미지를 서버가 받아 첨부로 저장 (spec/features/F1-editor.md 2절 P1). SSRF 방어 적용. */
+    @PostMapping("/fetch")
+    public ResponseEntity<AttachmentService.Info> fetch(@PathVariable long pageId, @RequestBody FetchRequest r,
+                                                        Authentication auth) {
+        var response = fetcher.get(r.url(), (int) Math.min(Integer.MAX_VALUE, settings.maxFileSizeBytes()), false,
+                Duration.ofSeconds(15));
+        if (response.status() != 200) {
+            throw new WikiException(502, "FETCH_FAILED", "url returned HTTP " + response.status());
+        }
+        String mime = response.contentType().replaceAll(";.*$", "").strip();
+        var info = attachments.upload(pageId, r.filename(), mime, response.body(), currentUser.id(auth));
+        return ResponseEntity.status(HttpStatus.CREATED).body(info);
     }
 
     @GetMapping

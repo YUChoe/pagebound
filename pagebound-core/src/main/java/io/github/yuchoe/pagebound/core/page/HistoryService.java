@@ -113,10 +113,14 @@ public class HistoryService {
     }
 
     public List<Backlink> backlinks(String path) {
+        return backlinks(requireId(path));
+    }
+
+    public List<Backlink> backlinks(long pageId) {
         return jdbc.sql("""
                 SELECT p.path, p.title FROM page_links l JOIN pages p ON p.id = l.source_page_id
                 WHERE l.target_page_id = ? AND p.deleted_at IS NULL AND p.is_draft = 0 ORDER BY p.path""")
-                .param(requireId(path))
+                .param(pageId)
                 .query((rs, n) -> new Backlink(rs.getString(1), rs.getString(2)))
                 .list();
     }

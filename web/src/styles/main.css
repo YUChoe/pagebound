@@ -342,3 +342,19 @@ a.lp-loading { background: linear-gradient(90deg, #f1f3f5 25%, #e5e7eb 50%, #f1f
 .settings-form button { align-self: flex-start; }
 .audit-mini { font-size: 13px; }
 tr.muted td { color: #9ca3af; }
+
+/* 문서 화면 P1 (F5): 메뉴, 플로팅 버튼, 각주 툴팁 */
+.page-menu { display: inline-flex; gap: 4px; }
+.split-btn { position: relative; display: inline-flex; }
+.split-btn .split-toggle { border-left: 0; border-top-left-radius: 0; border-bottom-left-radius: 0; padding: 0 6px; }
+.split-btn .permalink-btn { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.dropdown { position: absolute; right: 0; top: 100%; z-index: 40; background: #fff; border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12); list-style: none; margin: 4px 0 0; padding: 4px; min-width: 220px; }
+.dropdown button { display: block; width: 100%; text-align: left; border: 0; }
+.dropdown button.active { font-weight: 700; }
+.menu-panel { padding: 8px 12px; max-height: 60vh; overflow: auto; min-width: 280px; }
+.menu-panel h4 { margin: 8px 0 4px; }
+.menu-panel ul { padding-left: 16px; margin: 0; }
+.floating-buttons { position: fixed; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 6px; z-index: 30; }
+.floating-buttons button { width: 36px; height: 36px; border-radius: 50%; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); background: #fff; }
+.fn-tooltip { position: absolute; z-index: 50; max-width: 420px; background: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); font-size: 14px; }
+.fn-tooltip p { margin: 0; }

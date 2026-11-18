@@ -40,6 +40,7 @@ export const api = {
   recent: (limit = 10) => request('GET', `/api/v1/recent?${q({ limit })}`),
   blame: (id) => request('GET', `/api/v1/pages/${id}/blame`),
   revisions: (id) => request('GET', `/api/v1/pages/${id}/revisions`),
+  backlinks: (id) => request('GET', `/api/v1/pages/${id}/backlinks`),
   revision: (id, version) => request('GET', `/api/v1/pages/${id}/revisions/${version}`),
   diff: (id, from, to) => request('GET', `/api/v1/pages/${id}/diff?${q({ from, to })}`),
   restoreRevision: (id, version) => request('POST', `/api/v1/pages/${id}/revisions/${version}/restore`),
@@ -62,6 +63,7 @@ export const api = {
   renameAttachment: (pageId, id, filename) =>
     json('PATCH', `/api/v1/pages/${pageId}/attachments/${id}`, { filename, rewriteContent: true }),
   deleteAttachment: (pageId, id) => request('DELETE', `/api/v1/pages/${pageId}/attachments/${id}`),
+  fetchAttachment: (pageId, url, filename) => json('POST', `/api/v1/pages/${pageId}/attachments/fetch`, { url, filename }),
   copyAttachment: (pageId, sourcePageId, filename) =>
     json('POST', `/api/v1/pages/${pageId}/attachments/copy`, { sourcePageId, filename }),
   login: (username, password) => request('POST', '/login', q({ username, password }),

@@ -40,6 +40,11 @@ public class HistoryController {
         return history.revision(id, version);
     }
 
+    @GetMapping("/backlinks")
+    public List<HistoryService.Backlink> backlinks(@PathVariable long id) {
+        return history.backlinks(id);
+    }
+
     @GetMapping("/diff")
     public HistoryService.Diff diff(@PathVariable long id, @RequestParam int from, @RequestParam int to) {
         return history.diff(id, from, to);

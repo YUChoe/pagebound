@@ -66,4 +66,13 @@ class HistoryApiTest {
         mvc.perform(get("/api/v1/pages/2/revisions/3")).andExpect(jsonPath("$.content").value("a"));
         mvc.perform(get("/api/v1/pages/2/revisions/99")).andExpect(status().isNotFound());
     }
+
+    @Test
+    void backlinksAndPrivateImageFetchIsBlocked() throws Exception {
+        mvc.perform(get("/api/v1/pages/3/backlinks")).andExpect(jsonPath("$[0].path").value("nems/통계"));
+        mvc.perform(post("/api/v1/pages/2/attachments/fetch").with(csrf()).with(user("a@b.c").roles("EDITOR"))
+                        .contentType("application/json").content("{\"url\":\"http://127.0.0.1/a.png\",\"filename\":\"a.png\"}"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("BLOCKED_HOST"));
+    }
 }

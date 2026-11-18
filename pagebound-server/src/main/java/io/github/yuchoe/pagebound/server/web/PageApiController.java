@@ -76,6 +76,7 @@ public class PageApiController {
         body.put("anonymousRead", settings.anonymousRead());
         body.put("siteName", settings.siteName());
         body.put("homePath", settings.homePath());
+        body.put("baseUrl", settings.baseUrl());
         boolean authenticated = authentication != null && authentication.isAuthenticated()
                 && !(authentication instanceof AnonymousAuthenticationToken);
         body.put("authenticated", authenticated);
