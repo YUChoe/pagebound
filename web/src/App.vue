@@ -6,6 +6,7 @@ import RecentSidebar from './components/RecentSidebar.vue'
 import SearchBox from './components/SearchBox.vue'
 import { api } from './api.js'
 import { refreshSession, session } from './session.js'
+import { THEME_ICON, THEME_LABEL, cycleTheme, theme } from './theme.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -32,6 +33,7 @@ async function logout() {
     </nav>
     <SearchBox />
     <span class="spacer" />
+    <button type="button" class="link-btn" :title="'테마: ' + THEME_LABEL[theme.mode]" @click="cycleTheme">{{ THEME_ICON[theme.mode] }}</button>
     <span v-if="session.authenticated" class="user">
       {{ session.name }}
       <router-link to="/settings/tokens">API 토큰</router-link>

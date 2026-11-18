@@ -37,7 +37,7 @@
 .markdown-body a.wikilink.red { color: var(--red-link); }
 
 .markdown-body blockquote { border-left: 4px solid var(--border); padding: 0.2em 1em; color: #4b5563; }
-.markdown-body .callout { border-left-width: 4px; border-radius: 4px; color: var(--text); background: #f3f6fa; }
+.markdown-body .callout { border-left-width: 4px; border-radius: 4px; color: var(--text); background: var(--subtle); }
 .markdown-body .callout::before { content: attr(data-callout); display: block; font-weight: 700; font-size: 0.85em; }
 .markdown-body .callout-info, .markdown-body .callout-note { border-left-color: #1a5fb4; background: #eef4fc; }
 .markdown-body .callout-tip, .markdown-body .callout-success { border-left-color: #1a7f37; background: #edf8f0; }
@@ -50,8 +50,8 @@
 .table-wrap { overflow-x: auto; margin: 0.8em 0; }
 .markdown-body table { border-collapse: collapse; }
 .markdown-body th, .markdown-body td { border: 1px solid var(--border); padding: 6px 10px; }
-.markdown-body th { background: #f3f4f6; }
-.markdown-body tr:nth-child(2n) td { background: #fafbfc; }
+.markdown-body th { background: var(--subtle); }
+.markdown-body tr:nth-child(2n) td { background: var(--subtle); }
 
 .markdown-body code { font-family: var(--mono); font-size: 0.875em; tab-size: 4; }
 .markdown-body :not(pre) > code { background: var(--code-bg); border-radius: 4px; padding: 0.1em 0.35em; }
@@ -123,10 +123,10 @@
 .cb-gutter span { display: block; cursor: pointer; }
 .cb-gutter span:hover { color: var(--accent, #0b6e4f); text-decoration: underline; }
 .cb-menu-wrap { position: relative; display: inline-block; }
-.cb-menu { position: absolute; right: 0; top: 100%; z-index: 40; background: #fff; border: 1px solid #d0d7de; border-radius: 6px; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12); padding: 4px; min-width: 160px; }
+.cb-menu { position: absolute; right: 0; top: 100%; z-index: 40; background: var(--card); border: 1px solid #d0d7de; border-radius: 6px; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12); padding: 4px; min-width: 160px; }
 .cb-menu .cb-btn { display: block; width: 100%; text-align: left; }
 .cb-modal { position: fixed; inset: 0; z-index: 100; background: rgba(0, 0, 0, 0.45); display: flex; align-items: stretch; justify-content: center; padding: 24px; }
-.cb-modal-panel { background: #fff; border-radius: 8px; width: 100%; overflow: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.cb-modal-panel { background: var(--card); border-radius: 8px; width: 100%; overflow: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
 .cb-modal-close { align-self: flex-end; }
 .cb-modal pre { max-height: none; overflow: auto; margin: 0; }
 .cb-raw { white-space: pre; font-family: var(--mono); font-size: 13px; }

@@ -6,7 +6,8 @@ let seq = 0
 function loadMermaid() {
   if (!mermaidPromise) {
     mermaidPromise = import('mermaid').then(({ default: mermaid }) => {
-      mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', theme: 'default' })
+      const dark = document.documentElement.dataset.theme === 'dark'
+      mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', theme: dark ? 'dark' : 'default' })
       return mermaid
     })
   }

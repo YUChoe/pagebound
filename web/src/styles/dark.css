@@ -1,0 +1,72 @@
+/* 다크 테마 (spec/features/F5-page-view.md 4절 P1). html[data-theme="dark"] — theme.js가 설정 */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0d1117;
+  --card: #161b22;
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --border: #30363d;
+  --accent: #2ea043;
+  --link: #58a6ff;
+  --red-link: #ff7b72;
+  --topbar: #0b4f39;
+  --code-bg: #0d1117;
+  --subtle: #1c2128;
+}
+
+[data-theme="dark"] button, [data-theme="dark"] .btn, [data-theme="dark"] input, [data-theme="dark"] select, [data-theme="dark"] textarea {
+  background: var(--card); color: var(--text); border-color: var(--border);
+}
+[data-theme="dark"] button:hover { background: var(--subtle); }
+[data-theme="dark"] .btn.primary, [data-theme="dark"] button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+[data-theme="dark"] .topbar .link-btn { background: transparent; }
+[data-theme="dark"] .tree-row.active, [data-theme="dark"] .chip, [data-theme="dark"] .suggest li.active,
+[data-theme="dark"] .suggest li:hover { background: #12372a; }
+[data-theme="dark"] .tree-row.drop-inside { background: #1a4a38; }
+[data-theme="dark"] .badge, [data-theme="dark"] .badge.src-migration { background: #30363d; }
+[data-theme="dark"] .badge.src-mcp { background: #3b2e5a; }
+[data-theme="dark"] .badge.src-api { background: #1f3a5f; }
+[data-theme="dark"] .badge.src-system, [data-theme="dark"] .badge.warn { background: #4d3b10; color: #f0c674; }
+[data-theme="dark"] .banner { background: #13233a; border-color: #1f3a5f; }
+[data-theme="dark"] .banner.warn { background: #3a2e10; border-color: #6b5513; }
+[data-theme="dark"] .markdown-body .callout-info, [data-theme="dark"] .markdown-body .callout-note { background: #13233a; }
+[data-theme="dark"] .markdown-body .callout-tip, [data-theme="dark"] .markdown-body .callout-success { background: #12261a; }
+[data-theme="dark"] .markdown-body .callout-warning { background: #2e2610; }
+[data-theme="dark"] .markdown-body .callout-danger { background: #2d1416; }
+[data-theme="dark"] .d-del, [data-theme="dark"] .diff-delete .diff-old, [data-theme="dark"] .diff-change .diff-old { background: #3c1618; }
+[data-theme="dark"] .d-add, [data-theme="dark"] .diff-insert .diff-new, [data-theme="dark"] .diff-change .diff-new { background: #12261a; }
+[data-theme="dark"] mark, [data-theme="dark"] mark.hl { background: #5a4a12; color: inherit; }
+[data-theme="dark"] .codeblock .cb-line.cb-hl { background: #3a3416; }
+[data-theme="dark"] .codeblock .cb-line.cb-target { background: #5a4a12; }
+[data-theme="dark"] a.lp-loading { background: linear-gradient(90deg, #1c2128 25%, #2d333b 50%, #1c2128 75%); background-size: 200% 100%; }
+[data-theme="dark"] .floating-buttons button, [data-theme="dark"] .dropdown, [data-theme="dark"] .cb-menu,
+[data-theme="dark"] .fn-tooltip, [data-theme="dark"] .modal, [data-theme="dark"] .cb-modal-panel { background: var(--card); border-color: var(--border); }
+[data-theme="dark"] .markdown-body img { filter: brightness(0.9); }
+
+/* highlight.js github 테마의 다크 대응 */
+[data-theme="dark"] .hljs { color: #e6edf3; background: transparent; }
+[data-theme="dark"] .hljs-doctag, [data-theme="dark"] .hljs-keyword, [data-theme="dark"] .hljs-meta .hljs-keyword,
+[data-theme="dark"] .hljs-template-tag, [data-theme="dark"] .hljs-template-variable, [data-theme="dark"] .hljs-type,
+[data-theme="dark"] .hljs-variable.language_ { color: #ff7b72; }
+[data-theme="dark"] .hljs-title, [data-theme="dark"] .hljs-title.class_, [data-theme="dark"] .hljs-title.function_ { color: #d2a8ff; }
+[data-theme="dark"] .hljs-attr, [data-theme="dark"] .hljs-attribute, [data-theme="dark"] .hljs-literal, [data-theme="dark"] .hljs-meta,
+[data-theme="dark"] .hljs-number, [data-theme="dark"] .hljs-operator, [data-theme="dark"] .hljs-variable,
+[data-theme="dark"] .hljs-selector-attr, [data-theme="dark"] .hljs-selector-class, [data-theme="dark"] .hljs-selector-id { color: #79c0ff; }
+[data-theme="dark"] .hljs-regexp, [data-theme="dark"] .hljs-string, [data-theme="dark"] .hljs-meta .hljs-string { color: #a5d6ff; }
+[data-theme="dark"] .hljs-built_in, [data-theme="dark"] .hljs-symbol { color: #ffa657; }
+[data-theme="dark"] .hljs-comment, [data-theme="dark"] .hljs-code, [data-theme="dark"] .hljs-formula { color: #8b949e; }
+[data-theme="dark"] .hljs-name, [data-theme="dark"] .hljs-quote, [data-theme="dark"] .hljs-selector-tag,
+[data-theme="dark"] .hljs-selector-pseudo { color: #7ee787; }
+[data-theme="dark"] .hljs-subst { color: #e6edf3; }
+[data-theme="dark"] .hljs-section { color: #1f6feb; }
+[data-theme="dark"] .hljs-addition { color: #aff5b4; background-color: #033a16; }
+[data-theme="dark"] .hljs-deletion { color: #ffdcd7; background-color: #67060c; }
+
+/* 인쇄는 항상 라이트 (F5 4절): 다크에서도 흰 바탕 */
+@media print {
+  :root[data-theme="dark"] {
+    color-scheme: light; --bg: #fff; --card: #fff; --text: #1f2328; --muted: #6b7280; --border: #dde1e6;
+    --link: #1a5fb4; --code-bg: #f6f8fa; --subtle: #f6f8fa;
+  }
+  [data-theme="dark"] .hljs, [data-theme="dark"] .hljs * { color: #1f2328 !important; }
+}
