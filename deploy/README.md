@@ -4,6 +4,9 @@
 
 사내 주소는 자리표시자(`<legacy-wiki>`, `<gitlab-a>`, `<gitlab-b>`)로 적는다. 실제 값은 저장소 밖에서 관리한다.
 
+- 빠른 안내(옮길 파일과 실행 명령만): [SERVER-SETUP.md](SERVER-SETUP.md)
+- GitLab 토큰 발급(링크 미리보기): [GITLAB-TOKEN.md](GITLAB-TOKEN.md)
+
 ## 1. 요구 사항
 
 | 항목 | 값 |
@@ -36,7 +39,7 @@ sudo chown -R pagebound:pagebound /opt/pagebound
 sudo cp deploy/pagebound.service /etc/systemd/system/ && sudo systemctl daemon-reload
 ```
 
-- `pagebound.env`에 GitLab 서비스 계정 토큰을 넣는다 (없으면 링크 미리보기만 비활성)
+- `pagebound.env`에 GitLab 토큰을 넣는다 (없으면 링크 미리보기만 비활성). 발급은 [GITLAB-TOKEN.md](GITLAB-TOKEN.md)
 - 관리자 계정은 Wiki.js 사용자가 그대로 이전된다 (기존 비밀번호로 로그인)
 
 ## 4. 데이터 이전 (리허설·전환 공통)
