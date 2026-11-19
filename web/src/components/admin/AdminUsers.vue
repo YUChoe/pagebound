@@ -3,11 +3,14 @@
 import { computed, onMounted, ref } from 'vue'
 import { adminApi, errorText } from '../../admin.js'
 import { formatDate } from '../../time.js'
+import { encodePath } from '../../markdown/wikiPaths.js'
+import { SOURCE_LABELS } from '../../blame.js'
 
 const users = ref([])
 const filter = ref({ text: '', role: '', state: '' })
 const form = ref({ email: '', name: '', role: 'EDITOR', password: '' })
 const notice = ref('')
+const activity = ref(null)
 const error = ref('')
 
 const shown = computed(() => users.value.filter((u) => {
@@ -59,6 +62,11 @@ function reset(u) {
   })
 }
 
+// 사용자별 활동 (F12 5절 P1): 최근 편집, 보유 토큰
+async function showActivity(u) {
+  activity.value = { user: u, ...(await adminApi.userActivity(u.id)) }
+}
+
 onMounted(load)
 </script>
 
@@ -92,8 +100,33 @@ onMounted(load)
         <td class="history-actions">
           <button type="button" @click="toggleActive(u)">{{ u.active ? '비활성화' : '활성화' }}</button>
           <button type="button" @click="reset(u)">비밀번호 초기화</button>
+          <button type="button" @click="showActivity(u)">활동</button>
         </td>
       </tr>
     </tbody>
   </table>
+  <section v-if="activity" class="user-activity">
+    <h2>{{ activity.user.name }} 활동 <button type="button" @click="activity = null">닫기</button></h2>
+    <h3>최근 편집 <span class="muted">{{ activity.edits.length }}건</span></h3>
+    <table class="recent-table">
+      <thead><tr><th>문서</th><th>버전</th><th>출처</th><th>요약</th><th>시각</th></tr></thead>
+      <tbody>
+        <tr v-for="e in activity.edits" :key="e.path + e.version">
+          <td><router-link v-if="!e.trashed" :to="'/w/' + encodePath(e.path)">{{ e.title }}</router-link>
+            <span v-else class="muted">{{ e.title }} (휴지통)</span></td>
+          <td>v{{ e.version }}</td>
+          <td><span class="badge" :class="'src-' + e.source">{{ SOURCE_LABELS[e.source] ?? e.source }}</span></td>
+          <td>{{ e.summary ?? '' }}</td>
+          <td class="muted">{{ formatDate(e.createdAt) }}</td>
+        </tr>
+        <tr v-if="!activity.edits.length"><td colspan="5" class="muted">편집 기록 없음</td></tr>
+      </tbody>
+    </table>
+    <h3>보유 토큰 <span class="muted">{{ activity.tokens.length }}개</span></h3>
+    <ul>
+      <li v-for="t in activity.tokens" :key="t.id">{{ t.name }} <span class="badge">{{ t.scope }}</span>
+        <span class="muted">마지막 사용 {{ t.lastUsedAt ? formatDate(t.lastUsedAt) : '-' }}{{ t.revokedAt ? ' · 폐기됨' : '' }}</span></li>
+      <li v-if="!activity.tokens.length" class="muted">토큰 없음</li>
+    </ul>
+  </section>
 </template>

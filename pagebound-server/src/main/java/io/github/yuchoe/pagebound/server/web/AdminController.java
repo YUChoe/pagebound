@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.github.yuchoe.pagebound.core.admin.AdminQueries;
 import io.github.yuchoe.pagebound.core.settings.RuntimeSettings;
+import io.github.yuchoe.pagebound.core.token.ApiTokenService;
 import io.github.yuchoe.pagebound.core.user.UserAdminService;
 import io.github.yuchoe.pagebound.server.config.BackupService;
 
@@ -50,10 +51,12 @@ public class AdminController {
     private final CurrentUser currentUser;
     private final RuntimeSettings settings;
     private final BackupService backup;
+    private final ApiTokenService tokens;
     private final Path dataDir;
 
     public AdminController(AdminQueries queries, UserAdminService users, PasswordEncoder encoder,
                            CurrentUser currentUser, RuntimeSettings settings, BackupService backup,
+                           ApiTokenService tokens,
                            @Value("${pagebound.data-dir}") Path dataDir) {
         this.queries = queries;
         this.users = users;
@@ -61,6 +64,7 @@ public class AdminController {
         this.currentUser = currentUser;
         this.settings = settings;
         this.backup = backup;
+        this.tokens = tokens;
         this.dataDir = dataDir;
     }
 
@@ -90,6 +94,12 @@ public class AdminController {
     public ResponseEntity<Void> update(@PathVariable long id, @RequestBody UpdateUserRequest r, Authentication auth) {
         users.update(id, r.role(), r.active(), currentUser.id(auth));
         return ResponseEntity.noContent().build();
+    }
+
+    /** 사용자별 활동 (F12 5절 P1): 최근 편집 20건, 보유 토큰. */
+    @GetMapping("/users/{id}/activity")
+    public Map<String, Object> activity(@PathVariable long id) {
+        return Map.of("edits", queries.recentEdits(id, 20), "tokens", tokens.list(id));
     }
 
     @PostMapping("/users/{id}/reset-password")

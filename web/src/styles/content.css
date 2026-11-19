@@ -132,4 +132,5 @@
 .cb-raw { white-space: pre; font-family: var(--mono); font-size: 13px; }
 @media print {
   .codeblock pre[hidden] { content-visibility: visible; display: flex !important; padding: revert; border: revert; }
+  .codeblock .cb-toggle, .codeblock .cb-preview { display: none !important; }
 }

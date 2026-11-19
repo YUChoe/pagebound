@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { session, whenSessionLoaded } from './session.js'
+import { refreshSession, session, whenSessionLoaded } from './session.js'
 import PageView from './components/PageView.vue'
 import EditorView from './components/EditorView.vue'
 import BlameView from './components/BlameView.vue'
@@ -72,6 +72,11 @@ router.beforeEach(async (to) => {
     return { name: 'password' }
   }
   return true
+})
+
+// 화면 이동마다 로그인 상태 재확인: 서버에서 세션이 만료·무효화(비활성화, 역할 변경)돼도 헤더·편집 버튼이 따라간다
+router.afterEach((to, from) => {
+  if (session.loaded && from.matched.length) refreshSession().catch(() => {})
 })
 
 // 라우트 파라미터 → 문서 경로

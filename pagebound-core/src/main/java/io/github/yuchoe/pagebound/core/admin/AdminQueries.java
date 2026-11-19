@@ -134,6 +134,22 @@ public class AdminQueries {
                 .toList();
     }
 
+    /** 사용자별 최근 편집 (F12 5절 P1). trashed: 지금은 휴지통에 있는 문서. */
+    public record UserEdit(String path, String title, int version, String action, String source, String summary,
+                           String createdAt, boolean trashed) {
+    }
+
+    public List<UserEdit> recentEdits(long userId, int limit) {
+        return jdbc.sql("""
+                SELECT p.path, r.title, r.version, r.action, r.source, r.summary, r.created_at, p.deleted_at IS NOT NULL
+                FROM page_revisions r JOIN pages p ON p.id = r.page_id
+                WHERE r.author_id = ? AND p.is_draft = 0 ORDER BY r.created_at DESC, r.id DESC LIMIT ?""")
+                .params(userId, limit)
+                .query((rs, n) -> new UserEdit(rs.getString(1), rs.getString(2), rs.getInt(3), rs.getString(4),
+                        rs.getString(5), rs.getString(6), rs.getString(7), rs.getBoolean(8)))
+                .list();
+    }
+
     /** 본문도 하위 문서도 없는 활성 문서. */
     public List<PageRef> emptyPages() {
         return jdbc.sql("""

@@ -83,6 +83,19 @@ class AdminApiTest {
     }
 
     @Test
+    void userActivityListsRecentEditsAndTokens() throws Exception {
+        jdbc.sql("INSERT INTO api_tokens (user_id, name, token_hash, scope, created_at) VALUES (1, 'cli', 'h', 'read', 't')")
+                .update();
+        mvc.perform(get("/api/v1/admin/users/1/activity").with(ADMIN))
+                .andExpect(jsonPath("$.edits[0].path").value("nems/통계"))
+                .andExpect(jsonPath("$.edits[0].version").value(2))
+                .andExpect(jsonPath("$.edits[0].source").value("mcp"))
+                .andExpect(jsonPath("$.tokens[0].name").value("cli"));
+        mvc.perform(get("/api/v1/admin/users/1/activity").with(user("a@b.c").roles("EDITOR")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void lastAdminAndSelfAreProtected() throws Exception {
         mvc.perform(patch("/api/v1/admin/users/5").with(ADMIN).with(csrf()).contentType(MediaType.APPLICATION_JSON)
                         .content("{\"role\":\"EDITOR\"}"))

@@ -9,6 +9,7 @@ export const adminApi = {
   createUser: (body) => api.rawJson('POST', '/api/v1/admin/users', body),
   updateUser: (id, body) => api.rawJson('PATCH', `/api/v1/admin/users/${id}`, body),
   resetPassword: (id) => api.raw('POST', `/api/v1/admin/users/${id}/reset-password`),
+  userActivity: (id) => api.raw('GET', `/api/v1/admin/users/${id}/activity`),
   trash: () => api.raw('GET', '/api/v1/admin/trash'),
   restore: (id, slug) => api.rawJson('POST', `/api/v1/admin/trash/${id}/restore`, slug ? { slug } : {}),
   purge: (id) => api.raw('DELETE', `/api/v1/admin/trash/${id}`),

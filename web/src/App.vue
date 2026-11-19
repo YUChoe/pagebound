@@ -12,7 +12,13 @@ const route = useRoute()
 const router = useRouter()
 const treeOpen = ref(false)
 
-onMounted(refreshSession)
+onMounted(() => {
+  refreshSession()
+  // 오래 열어 둔 탭으로 돌아오면 로그인 상태 재확인 (세션 만료 후 헤더에 이전 사용자가 남지 않게)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') refreshSession().catch(() => {})
+  })
+})
 watch(() => route.fullPath, () => { treeOpen.value = false })
 
 async function logout() {
